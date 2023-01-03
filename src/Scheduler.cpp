@@ -13,7 +13,6 @@ TCB *Scheduler::get()
 
 void Scheduler::put(TCB *tcb)
 {
-    printString("===============USAO U SCHEDULER=================\n");
 
     readyThreadQueue.addLast(tcb);
 }

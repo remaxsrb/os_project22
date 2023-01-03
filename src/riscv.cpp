@@ -23,7 +23,6 @@ uint64 Riscv::syscall(uint64 *args)
     switch (opcode) {
 
         case MEM_ALLOC: {
-            printString("===============USAO U SISTEMSKI POZIV MEM_ALLOC=================\n\n");
             size_t volatile size = args[1] * MEM_BLOCK_SIZE;
             return_value = (uint64)__mem_alloc(size);
             break; }
@@ -32,7 +31,6 @@ uint64 Riscv::syscall(uint64 *args)
             return_value = (uint64)__mem_free(ptr);
             break;}
         case THREAD_CREATE: {
-            printString("===============USAO U SISTEMSKI POZIV THREAD_CREATE=================\n\n");
                 thread_t *handle = (thread_t*)args[1];
                 Body routine = (Body)args[2];
                 void *arguments = (void*)args[3];
@@ -42,7 +40,6 @@ uint64 Riscv::syscall(uint64 *args)
                     return_value =0;
                 else
                     return_value=-1;
-
 
             break;
         }

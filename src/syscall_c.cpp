@@ -14,8 +14,8 @@ inline void invoke_sys_call(uint64 opcode)
 {
     // ovo parce koda se ponavlja u svakom sistemskom pozivu pa sam ga izdvojio
     __asm__ volatile ("mv a0, %0" : : "r" (opcode));
-
     __asm__ volatile ("ecall");
+
 }
 
 //svaki sistemski poziv povratnu vrednost cuva u registru a0.
@@ -80,11 +80,9 @@ int thread_create(thread_t *handle, void (*start_routine)(void*), void *arg)
         return -2;
 
 
-    printString("===============POCINJEM DA ALOCIRAM STEK ZA NIT=================\n\n");
     void *stack = mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE); //prvi ecall u thread  create
     if (!stack)
         return -3;
-    printString("===============ZAVRSIO ALOKACIJU STEKA ZA NIT=================\n\n");
 
     move_args();
     __asm__ volatile("mv a4, %0" : : "r" (stack));

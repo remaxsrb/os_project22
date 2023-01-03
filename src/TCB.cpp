@@ -12,11 +12,8 @@ uint64 TCB::timeSliceCounter = 0;
 
 TCB *TCB::createThread(thread_t * handle, Body body, void *arg, uint64 *stack)
 {
-    printString("===============POCINJEM DA PRAVIM NIT=================\n");
-    thread_t t = new TCB(body, arg, stack); //treci ecall
-    printString("===============NAPRAVIO NIT=================\n");
-    *handle = t;
-    return  *handle;
+    return new TCB(body, arg, stack);
+
 }
 
 void TCB::yield()
@@ -47,7 +44,6 @@ void TCB::dispatch()
 
 void TCB::threadWrapper()
 {
-    printString("=================USAO U THREAD WRAPPER===========\n");
     Riscv::popSppSpie();
     running->body(running->arg);
     running->setThreadStatus(FINISHED);

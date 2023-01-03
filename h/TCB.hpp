@@ -56,7 +56,6 @@ private:
 
     {
         if (body != nullptr) {
-            printString("===============USAO U KONSTRUKTOR TCB I IDEM U SCHEDULER=================\n");
             Scheduler::put(this); }
     }
 
