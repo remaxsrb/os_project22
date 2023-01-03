@@ -36,7 +36,9 @@ uint64 Riscv::syscall(uint64 *args)
                 void *arguments = (void*)args[3];
                 uint64  *stack = (uint64*)args[4];
 
-                if(TCB::createThread(handle,routine,arguments,stack))
+                *handle = TCB::createThread( routine, arguments, stack);
+
+                if(*handle)
                     return_value =0;
                 else
                     return_value=-1;
@@ -51,6 +53,7 @@ uint64 Riscv::syscall(uint64 *args)
 
         case THREAD_DISPATCH: {
 
+            printString("RISCV DISPATCH\n");
             TCB::dispatch();
             break;
         }
@@ -121,6 +124,7 @@ uint64 Riscv::syscall(uint64 *args)
             break;
     }
 
+
     return return_value;
 
 }
@@ -138,10 +142,6 @@ void Riscv::handleSupervisorTrap()
     uint64 scause = r_scause();
     if (scause == ECALL_USER || scause == ECALL_SUPER)
     {
-        printString("ECALL AND SCAUSE IS: ");
-        printInt(r_scause());
-        printString("...\n");
-
 
         // interrupt: no; cause code: environment call from U-mode(8) or S-mode(9)
         uint64 volatile sepc = r_sepc() + 4;

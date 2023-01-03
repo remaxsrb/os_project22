@@ -5,19 +5,10 @@
 #include "../lib/mem.h"
 #include "../h/syscall_cpp.hpp"
 #include "../h/MemoryAllocator.hpp"
-#include "../tests/printing.hpp"
-#include "../h/riscv.hpp"
+
 void *__mem_alloc(size_t size)
 {
     void * ret = MemoryAllocator::alloc(size);
-    //printString("===============ALOKATOR JE VRATIO VREDNOST: ");
-    //printInt((uint64)ret);
-    //printString("=============\n");
-
-    printString("Return address in __mem_alloc_ is: ");
-    printInt(Riscv::r_sepc());
-    printString("...\n\n");
-
     return ret;
 }
 

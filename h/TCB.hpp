@@ -30,7 +30,7 @@ public:
 
     using Body = void (*)(void*);
 
-    static TCB *createThread(thread_t * handle, Body body,  void *arg, uint64 *stack);
+    static TCB *createThread( Body body,  void *arg, uint64 *stack);
 
     int start();
 

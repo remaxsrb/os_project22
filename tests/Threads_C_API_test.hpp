@@ -2,7 +2,7 @@
 #define XV6_THREADS_C_API_TEST_HPP
 
 #include "../h/syscall_c.hpp"
-
+#include "../h/TCB.hpp"
 #include "printing.hpp"
 
 bool finishedA = false;
@@ -17,6 +17,7 @@ uint64 fibonacci(uint64 n) {
 }
 
 void workerBodyA(void* arg) {
+    printString("USAO U WORKER A\n");
     for (uint64 i = 0; i < 10; i++) {
         printString("A: i="); printInt(i); printString("\n");
         for (uint64 j = 0; j < 10000; j++) {
@@ -29,6 +30,8 @@ void workerBodyA(void* arg) {
 }
 
 void workerBodyB(void* arg) {
+    printString("USAO U WORKER B\n");
+
     for (uint64 i = 0; i < 16; i++) {
         printString("B: i="); printInt(i); printString("\n");
         for (uint64 j = 0; j < 10000; j++) {
@@ -42,6 +45,8 @@ void workerBodyB(void* arg) {
 }
 
 void workerBodyC(void* arg) {
+    printString("USAO U WORKER C\n");
+
     uint8 i = 0;
     for (; i < 3; i++) {
         printString("C: i="); printInt(i); printString("\n");
@@ -69,6 +74,8 @@ void workerBodyC(void* arg) {
 }
 
 void workerBodyD(void* arg) {
+    printString("USAO U WORKER D\n");
+
     uint8 i = 10;
     for (; i < 13; i++) {
         printString("D: i="); printInt(i); printString("\n");
@@ -95,6 +102,10 @@ void Threads_C_API_test() {
     thread_t threads[4];
     thread_create(&threads[0], workerBodyA, nullptr);
     printString("ThreadA created\n");
+
+    TCB::running=threads[0];
+
+    TCB::running->setThreadStatus(RUNNING);
 
     thread_create(&threads[1], workerBodyB, nullptr);
     printString("ThreadB created\n");

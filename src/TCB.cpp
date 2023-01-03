@@ -10,9 +10,9 @@ TCB *TCB::running = nullptr;
 
 uint64 TCB::timeSliceCounter = 0;
 
-TCB *TCB::createThread(thread_t * handle, Body body, void *arg, uint64 *stack)
+TCB *TCB::createThread( Body body, void *arg, uint64 *stack)
 {
-    return new TCB(body, arg, stack);
+   return new TCB(body, arg, stack);
 
 }
 
@@ -24,6 +24,7 @@ void TCB::yield()
 
 void TCB::dispatch()
 {
+    printString("TCB DISPATCH\n");
 
     TCB *old = running;
     if (old->thread_status == RUNNING)
@@ -38,12 +39,14 @@ void TCB::dispatch()
     if (running)
         running->thread_status = RUNNING;
 
-
+    printString("PRELAZIM NA CONTEXT SWITCH\n");
     TCB::contextSwitch(&old->context, &running->context);
 }
 
 void TCB::threadWrapper()
 {
+    printString("THREAD WRAPPER\n");
+
     Riscv::popSppSpie();
     running->body(running->arg);
     running->setThreadStatus(FINISHED);

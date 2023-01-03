@@ -6,7 +6,6 @@
 #include "../h/opcodes.hpp"
 #include "../lib/console.h"
 #include "../tests/printing.hpp"
-
 uint64 timesentered = 0;
 
 
@@ -25,6 +24,8 @@ inline uint64 get_return_value()
 {
     uint64 volatile ret;
     __asm__ volatile ("mv %0, a0" : "=r" (ret));
+    //printInt(ret);
+   // printString("... je vrednost ret u get_return_value()\n");
     return ret;
 }
 
@@ -80,13 +81,17 @@ int thread_create(thread_t *handle, void (*start_routine)(void*), void *arg)
         return -2;
 
 
-    void *stack = mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE); //prvi ecall u thread  create
+    void *stack = mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
     if (!stack)
         return -3;
 
-    move_args();
+    //move_args();
+    __asm__ volatile("mv a1, %0" : : "r" (handle));
+    __asm__ volatile("mv a2, %0" : : "r" (start_routine));
+    __asm__ volatile("mv a3, %0" : : "r" (arg));
     __asm__ volatile("mv a4, %0" : : "r" (stack));
-    invoke_sys_call(THREAD_CREATE); //drugi ecall u thread create
+    invoke_sys_call(THREAD_CREATE);
+
 
     return get_return_value();
 }

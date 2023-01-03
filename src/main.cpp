@@ -17,7 +17,6 @@ int main ()
 
     MemoryAllocator::initialise_memory();
 
-    printString("==========================UCITAO MEMORIJU=========================\n");
 
     userMain();
 
