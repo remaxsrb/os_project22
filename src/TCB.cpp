@@ -35,7 +35,7 @@ void TCB::dispatch()
 
     if (running)
         running->thread_status = RUNNING;
-    printString("PRELAZIM NA PROMENU KONTEKSTA\n");
+
     TCB::contextSwitch(&old->context, &running->context);
 }
 

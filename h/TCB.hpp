@@ -55,8 +55,6 @@ private:
             thread_status(CREATED)
 
     {
-        if(stack == nullptr)
-            printString("======STACK IS NULL WHEN PASSED TO TCB CONSTRUCTOR=======\n");
         if (body!= nullptr)
             Scheduler::put(this);
     }

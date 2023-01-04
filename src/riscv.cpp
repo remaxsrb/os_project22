@@ -25,9 +25,6 @@ uint64 Riscv::syscall(uint64 *args)
         case MEM_ALLOC: {
             size_t volatile size = args[1] * MEM_BLOCK_SIZE;
             return_value = (uint64)__mem_alloc(size);
-            printString("Return value in syscall_MEM_ALLOC is: ");
-            printInt(return_value);
-            printString("....\n");
             break; }
         case MEM_FREE: {
             void *ptr = (void*)args[1];
@@ -148,11 +145,8 @@ void Riscv::handleSupervisorTrap()
 
         // interrupt: no; cause code: environment call from U-mode(8) or S-mode(9)
         uint64 volatile sepc = r_sepc() + 4;
-        uint64 ret = syscall(args);
-        printString("ret in handlesupervisor trap is: ");
-        printInt(ret);
-        printString("...\n");
-        w_retval(ret);
+
+        w_retval(syscall(args));
         w_sepc(sepc);
     }
     else if (scause == SOFTWARE)
