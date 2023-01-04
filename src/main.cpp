@@ -20,5 +20,7 @@ int main ()
 
     userMain();
 
+    printString("===========GOTOV C API THREAD=============\n");
+
     return 0;
 }

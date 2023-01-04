@@ -53,7 +53,6 @@ uint64 Riscv::syscall(uint64 *args)
 
         case THREAD_DISPATCH: {
 
-            printString("RISCV DISPATCH\n");
             TCB::dispatch();
             break;
         }
@@ -145,8 +144,11 @@ void Riscv::handleSupervisorTrap()
 
         // interrupt: no; cause code: environment call from U-mode(8) or S-mode(9)
         uint64 volatile sepc = r_sepc() + 4;
+        uint64 volatile sstatus = r_sstatus();
 
         w_retval(syscall(args));
+
+        w_sstatus(sstatus);
         w_sepc(sepc);
     }
     else if (scause == SOFTWARE)

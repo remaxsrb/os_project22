@@ -18,7 +18,7 @@ TCB *TCB::createThread( Body body, void *arg, uint64 *stack)
 
 void TCB::yield()
 {
-
+    __asm__ volatile ("mv a0, %0" : : "r" (THREAD_DISPATCH));
     __asm__ volatile ("ecall");
 }
 
@@ -41,7 +41,6 @@ void TCB::dispatch()
 
 void TCB::threadWrapper()
 {
-    printString("THREAD WRAPPER\n");
 
     Riscv::popSppSpie();
     running->body(running->arg);
