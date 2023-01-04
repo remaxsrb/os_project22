@@ -25,6 +25,7 @@ void TCB::yield()
 void TCB::dispatch()
 {
     TCB *old = running;
+    timeSliceCounter=0;
     if (old->thread_status == RUNNING)
     {
         running->setThreadStatus(READY);

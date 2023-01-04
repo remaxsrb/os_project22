@@ -16,3 +16,10 @@ void Scheduler::put(TCB *tcb)
 
     readyThreadQueue.addLast(tcb);
 }
+
+bool Scheduler::isEmpty()
+{
+    if(!readyThreadQueue.peekFirst())
+        return true;
+    return false;
+}

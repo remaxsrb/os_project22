@@ -17,10 +17,14 @@ int main ()
 
     MemoryAllocator::initialise_memory();
 
+    TCB* main;
+    thread_create(&main, nullptr, nullptr);
+    TCB::running = main;
+    TCB::running->setThreadStatus(RUNNING);
 
     userMain();
 
-    printString("===========GOTOV C API THREAD=============\n");
+    printString("=========== THREAD C API TEST PASSED =============\n");
 
     return 0;
 }

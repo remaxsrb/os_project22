@@ -20,6 +20,8 @@ public:
 
     static void put(TCB *tcb);
 
+    static bool isEmpty();
+
 };
 
 

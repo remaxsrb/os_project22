@@ -17,6 +17,7 @@ uint64 fibonacci(uint64 n) {
 }
 
 void workerBodyA(void* arg) {
+
     for (uint64 i = 0; i < 10; i++) {
         printString("A: i="); printInt(i); printString("\n");
         for (uint64 j = 0; j < 10000; j++) {
@@ -98,9 +99,7 @@ void Threads_C_API_test() {
     thread_create(&threads[0], workerBodyA, nullptr);
     printString("ThreadA created\n");
 
-    TCB::running=threads[0];
-
-    TCB::running->setThreadStatus(RUNNING);
+    //TCB::running->setThreadStatus(RUNNING);
 
     thread_create(&threads[1], workerBodyB, nullptr);
     printString("ThreadB created\n");
