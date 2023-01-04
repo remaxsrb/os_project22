@@ -26,11 +26,10 @@ void MemoryAllocator::initialise_memory()
 
 void *MemoryAllocator::alloc(size_t requested_size)
 {
-    //
+    //ako broj bllokova nije deljiv sa velicinom bloka uradi peding
     if(requested_size % MEM_BLOCK_SIZE != 0)
         requested_size = (requested_size / MEM_BLOCK_SIZE + 1 ) * MEM_BLOCK_SIZE;
 
-    allocd+=requested_size;
 
     //ako je alokacija uspesna vraca se adresa pocetnog bloka
 
@@ -40,7 +39,7 @@ void *MemoryAllocator::alloc(size_t requested_size)
         {
             remove(&free, current);
             insert(&allocated, current, ALLOCATED);
-            //printString("===============TACNA VELICINA=================\n");
+            allocd+=requested_size;
             return (void*)((char*)current + MEM_BLOCK_SIZE);
         }
 
@@ -63,16 +62,14 @@ void *MemoryAllocator::alloc(size_t requested_size)
 
             insert(&free, new_node, FREE);
             insert(&allocated, current, ALLOCATED);
-            //printString("===============VELICINA SLOBODNOG SEGMENTA JE VECA=================\n");
 
             char* returnval = (char*)current+MEM_BLOCK_SIZE;
-            //printString("===============IZLAZIM IZ ALOKATORA=================\n");
+            allocd+=requested_size;
 
             return (void*)(returnval);
 
         }
     }
-    printString("===============NEMA MEMORIJE=================\n");
     return nullptr; //nema odgovarajuceg segmenta u memoriji
 
 }

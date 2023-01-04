@@ -5,10 +5,13 @@
 #include "../lib/mem.h"
 #include "../h/syscall_cpp.hpp"
 #include "../h/MemoryAllocator.hpp"
-
+#include "../tests//printing.hpp"
 void *__mem_alloc(size_t size)
 {
     void * ret = MemoryAllocator::alloc(size);
+    printString("Address of allocated space in __mem_alloc is: ");
+    printInt((uint64)ret);
+    printString("....\n");
     return ret;
 }
 

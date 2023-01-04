@@ -197,6 +197,9 @@ inline void Riscv::w_sstatus(uint64 sstatus)
 }
 inline void Riscv::w_retval(uint64 ret)
 {
+    printString("ret in w_retval  is: ");
+    printInt(ret);
+    printString("...\n");
     __asm__ volatile ("mv a0, %0" : : "r" (ret));
 }
 

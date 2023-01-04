@@ -24,8 +24,6 @@ void TCB::yield()
 
 void TCB::dispatch()
 {
-    printString("TCB DISPATCH\n");
-
     TCB *old = running;
     if (old->thread_status == RUNNING)
     {
@@ -33,13 +31,11 @@ void TCB::dispatch()
         Scheduler::put(old);
     }
 
-
     running = Scheduler::get();
 
     if (running)
         running->thread_status = RUNNING;
-
-    printString("PRELAZIM NA CONTEXT SWITCH\n");
+    printString("PRELAZIM NA PROMENU KONTEKSTA\n");
     TCB::contextSwitch(&old->context, &running->context);
 }
 

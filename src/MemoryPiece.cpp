@@ -50,9 +50,9 @@ void insert(MemoryPiece **head_pointer, MemoryPiece *node, MemoryPieceStatus sta
 
 void remove(MemoryPiece **head_pointer, MemoryPiece* node)
 {
-    if(!head_pointer || !node) return;
-    //ako je trazeni cvor na pocetku
+    if(!head_pointer || !node) return; //ako nema liste ili nema cvora samo se vrati iz metode
 
+    //ako je trazeni cvor na pocetku
     MemoryPiece *head = *head_pointer;
     if (head==node)
     {

@@ -24,7 +24,7 @@ public:
 
     void setThreadStatus(uint8 status) { this->thread_status = status; }
 
-    bool isSystemThread() {return this->systemThread;}
+    bool isSystemThread() const {return this->systemThread;}
 
     uint64 getTimeSlice() const { return timeSlice; }
 
@@ -46,8 +46,8 @@ private:
     TCB(Body body, void *arg, uint64 *stack) :
             body(body),
             arg(arg),
-            stack(body != nullptr ? stack : 0),
-            context({body!= nullptr ? (uint64) &threadWrapper: 0,
+            stack(body != nullptr ? stack : nullptr),
+            context({ (uint64) &threadWrapper,
                      stack != nullptr ? (uint64) &stack[STACK_SIZE] : 0
                     }),
             timeSlice(DEFAULT_TIME_SLICE),
@@ -55,8 +55,10 @@ private:
             thread_status(CREATED)
 
     {
-        if (body != nullptr) {
-            Scheduler::put(this); }
+        if(stack == nullptr)
+            printString("======STACK IS NULL WHEN PASSED TO TCB CONSTRUCTOR=======\n");
+        if (body!= nullptr)
+            Scheduler::put(this);
     }
 
     struct Context

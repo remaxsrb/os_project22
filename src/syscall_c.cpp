@@ -24,8 +24,8 @@ inline uint64 get_return_value()
 {
     uint64 volatile ret;
     __asm__ volatile ("mv %0, a0" : "=r" (ret));
-    //printInt(ret);
-   // printString("... je vrednost ret u get_return_value()\n");
+    printInt(ret);
+    printString("... je vrednost ret u get_return_value()\n");
     return ret;
 }
 
@@ -82,6 +82,10 @@ int thread_create(thread_t *handle, void (*start_routine)(void*), void *arg)
 
 
     void *stack = mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
+    printString("Address of allocated stack is: ");
+    printInt((uint64)stack);
+    printString("....\n");
+    //svaka alokacija za stek vraca adresu 1, ima bag u alokatoru
     if (!stack)
         return -3;
 
