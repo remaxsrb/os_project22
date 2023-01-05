@@ -48,6 +48,7 @@ protected:
 
 public:
     static void wrapper(void*);
+
 };
 
 class Console {

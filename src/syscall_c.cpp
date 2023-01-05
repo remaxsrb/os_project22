@@ -203,9 +203,11 @@ int time_sleep(time_t timeout)
 
 char getc()
 {
-    return __getc();
+    invoke_sys_call(GETC);
+    return (char)get_return_value();
 }
 void putc(char c)
 {
-    __putc(c);
+    move_args();
+    invoke_sys_call(PUTC);
 }

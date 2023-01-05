@@ -23,22 +23,7 @@ buffer::~buffer()
 
 //pise na konzolu
 
-char buffer::put_char()
-{
-    item_available->wait();
-    mutex->wait();
-
-    char c = data[readCursor];
-    readCursor = (readCursor +1) % BUFFER_SIZE;
-    this->size--;
-    mutex->signal();
-    space_availavle->signal();
-
-    return  c;
-}
-
-//cita sa konzole
-void buffer::get_char(char c)
+void buffer::put_char(char c)
 {
     space_availavle->wait();
     mutex->wait();
@@ -51,4 +36,19 @@ void buffer::get_char(char c)
     mutex->signal();
     if(signalItemAvailable)
         item_available->signal();
+}
+
+//cita sa konzole
+char buffer::get_char()
+{
+    item_available->wait();
+    mutex->wait();
+
+    char c = data[readCursor];
+    readCursor = (readCursor +1) % BUFFER_SIZE;
+    this->size--;
+    mutex->signal();
+    space_availavle->signal();
+
+    return  c;
 }

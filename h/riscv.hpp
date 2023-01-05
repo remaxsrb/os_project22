@@ -10,6 +10,7 @@
 #include "opcodes.hpp"
 #include "MemoryAllocator.hpp"
 #include "SleepingThreads.hpp"
+#include "Buffer.hpp"
 
 class Riscv
 {
@@ -91,13 +92,17 @@ public:
     // supervisor trap
     static void supervisorTrap();
 
+    static buffer *buff;
+    static SleepingThreads sleepingThreads;
+    static bool userMode;
+
+
 private:
 
     // supervisor trap handler
     static void handleSupervisorTrap();
     static void w_retval(uint64);
     static uint64  syscall(uint64*);
-    static SleepingThreads sleepingThreads;
 
 
 };

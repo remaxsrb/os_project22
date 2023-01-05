@@ -9,8 +9,17 @@
 using Body = void (*)(void*);
 SleepingThreads Riscv::sleepingThreads;
 
+buffer* Riscv::buff = nullptr;
+bool Riscv:: userMode = false;
+
 void Riscv::popSppSpie()
 {
+    if (userMode)
+        mc_sstatus(Riscv::SSTATUS_SPP);
+
+    else
+        ms_sstatus(Riscv::SSTATUS_SPP);
+
     __asm__ volatile("csrw sepc, ra");
     __asm__ volatile("sret");
 }
@@ -125,10 +134,13 @@ uint64 Riscv::syscall(uint64 *args)
         }
 
         case GETC: {
+            return_value = buff->get_char();
             break;
         }
 
         case PUTC: {
+            char c = (char)args[1];
+            buff->put_char(c);
             break;
         }
 
@@ -183,6 +195,19 @@ void Riscv::handleSupervisorTrap()
     else if (scause == HARDWARE)
     {
         // interrupt: yes; cause code: supervisor external interrupt (PLIC; could be keyboard)
+
+        int irq = plic_claim();
+
+        if(irq == CONSOLE_IRQ)
+        {
+            while (*((char*)(CONSOLE_STATUS)) & CONSOLE_RX_STATUS_BIT) {
+
+                char c = (*(char*)CONSOLE_RX_DATA);
+                buff->put_char(c);
+
+            }
+            plic_complete(irq);
+        }
 
 
     }

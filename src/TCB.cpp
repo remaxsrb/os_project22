@@ -7,7 +7,6 @@
 
 
 TCB *TCB::running = nullptr;
-uint64 TCB::thread_count = 0;
 uint64 TCB::timeSliceCounter = 0;
 
 TCB *TCB::createThread( Body body, void *arg, uint64 *stack, bool runAtCreation)
@@ -15,7 +14,14 @@ TCB *TCB::createThread( Body body, void *arg, uint64 *stack, bool runAtCreation)
    return new TCB(body, arg, stack, runAtCreation);
 
 }
-
+void TCB::outputThreadBody(void *) {
+    while(true){
+        while((*((char*)(CONSOLE_STATUS)) & CONSOLE_TX_STATUS_BIT)){
+            char c = Riscv::buff->get_char();
+            *((char*)CONSOLE_TX_DATA) = c;
+        }
+    }
+}
 void TCB::yield()
 {
     __asm__ volatile ("mv a0, %0" : : "r" (THREAD_DISPATCH));
@@ -49,15 +55,15 @@ void TCB::threadWrapper()
     TCB::yield();
 }
 
-//int TCB::wake()
-//{
-//    if (this->getThreadStatus() != SLEEPING) {
-//        return -1;
-//    }
-//    this->thread_status = READY;
-//    Scheduler::put(this);
-//    return 0;
-//}
+int TCB::wake()
+{
+    if (running->thread_status != SLEEPING) {
+        return -1;
+    }
+    running->thread_status = READY;
+    Scheduler::put(running);
+    return 0;
+}
 
 
 int TCB::start()
@@ -81,13 +87,13 @@ int TCB::exit()
 }
 
 
-//int TCB::sleep(time_t timeout)
-//{
-//    if(running->getThreadStatus()!= RUNNING)
-//        return -1;
-//
-//    SleepingThreads::put(running, timeout);
-//    dispatch();
-//    return 0;
-//}
+int TCB::sleep(time_t timeout)
+{
+    if(running->getThreadStatus()!= RUNNING)
+        return -1;
+
+    Riscv::sleepingThreads.put(running, timeout);
+    dispatch();
+    return 0;
+}
 

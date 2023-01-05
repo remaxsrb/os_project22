@@ -27,14 +27,15 @@ public:
     buffer();
     ~buffer();
 
-    char put_char();
-    void get_char(char c);
+    char get_char();
+    void put_char(char c);
 
     uint64 getSize() const {return  this->size;}
 
     void *operator new(size_t size) { return __mem_alloc(size); }
 
     void operator delete(void *ptr) { __mem_free(ptr); }
+
 
 };
 

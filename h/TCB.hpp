@@ -24,7 +24,8 @@ public:
 
     void setThreadStatus(uint8 status) { this->thread_status = status; }
 
-    bool isSystemThread() const {return this->systemThread;}
+
+    static void outputThreadBody(void*);
 
     uint64 getTimeSlice() const { return timeSlice; }
 
@@ -52,8 +53,6 @@ private:
                      stack != nullptr ? (uint64) &stack[STACK_SIZE] : 0
                     }),
             timeSlice(DEFAULT_TIME_SLICE),
-            thread_id(thread_count++),
-            systemThread(false),
             thread_status(CREATED)
 
 
@@ -74,9 +73,6 @@ private:
     uint64 *stack;
     Context context;
     uint64 timeSlice;
-    uint64 thread_id;
-    static uint64 thread_count;
-    bool systemThread;
 
     uint8 thread_status;
     /*nit ce imati maksimalno sedam stanja te ce 8 bita biti vise nego dovoljno da se ona cuvaju
@@ -104,7 +100,9 @@ private:
 
     static int exit(); //gasenje trenutne niti
 
-   // static int sleep(time_t); //trenutna nit odlaze svoj rad za zadati broj otkucaja
+    static int sleep(time_t); //trenutna nit odlaze svoj rad za zadati broj otkucaja
+
+    static int wake(); // budi trenutnu nit ako je uspavana
 
     static uint64 timeSliceCounter;
 
