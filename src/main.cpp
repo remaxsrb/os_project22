@@ -26,5 +26,7 @@ int main ()
 
     printString("=========== THREAD C API TEST PASSED =============\n");
 
+    //printString("=========== THREAD C++ API TEST PASSED =============\n");
+
     return 0;
 }

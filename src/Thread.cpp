@@ -8,13 +8,13 @@
 Thread::Thread(void (*body)(void*), void *arg)
 {
     myHandle = nullptr;
-    thread_create(&myHandle, body, arg);
+    thread_prepare(&myHandle, body, arg);
 }
 
 Thread::Thread()
 {
     myHandle = nullptr;
-    thread_create(&myHandle, Thread::wrapper, (void*)this);
+    thread_prepare(&myHandle, Thread::wrapper, (void*)this);
 }
 
 Thread::~Thread()

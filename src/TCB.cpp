@@ -10,9 +10,9 @@ TCB *TCB::running = nullptr;
 
 uint64 TCB::timeSliceCounter = 0;
 
-TCB *TCB::createThread( Body body, void *arg, uint64 *stack)
+TCB *TCB::createThread( Body body, void *arg, uint64 *stack, bool runAtCreation)
 {
-   return new TCB(body, arg, stack);
+   return new TCB(body, arg, stack, runAtCreation);
 
 }
 
@@ -79,6 +79,7 @@ int TCB::exit()
     dispatch();
     return 0;
 }
+
 
 //int TCB::sleep(time_t timeout)
 //{

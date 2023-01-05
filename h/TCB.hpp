@@ -30,7 +30,8 @@ public:
 
     using Body = void (*)(void*);
 
-    static TCB *createThread( Body body,  void *arg, uint64 *stack);
+    static TCB *createThread( Body body,  void *arg, uint64 *stack, bool runAtCreation);
+
 
     int start();
 
@@ -43,7 +44,7 @@ public:
     static TCB *running;
 
 private:
-    TCB(Body body, void *arg, uint64 *stack) :
+    TCB(Body body, void *arg, uint64 *stack, bool runAtCreation) :
             body(body),
             arg(arg),
             stack(body != nullptr ? stack : nullptr),
@@ -55,7 +56,7 @@ private:
             thread_status(CREATED)
 
     {
-        if (body!= nullptr)
+        if (body!= nullptr && runAtCreation)
             Scheduler::put(this);
     }
 

@@ -17,7 +17,7 @@ int __mem_free(void *ptr)
     return MemoryAllocator::mem_free(ptr);
 }
 
-void *operator new(size_t n) noexcept
+void *operator new(size_t n)
 {
     return mem_alloc(n);
 }
@@ -27,7 +27,7 @@ void *operator new[](size_t n)
     return mem_alloc(n);
 }
 
-void operator delete(void *p) noexcept
+void operator delete(void *p)
 {
     mem_free(p);
 }

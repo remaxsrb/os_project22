@@ -36,7 +36,7 @@ uint64 Riscv::syscall(uint64 *args)
                 void *arguments = (void*)args[3];
                 uint64  *stack = (uint64*)args[4];
 
-                *handle = TCB::createThread( routine, arguments, stack);
+                *handle = TCB::createThread( routine, arguments, stack, 1);
 
                 if(*handle)
                     return_value =0;
@@ -45,7 +45,21 @@ uint64 Riscv::syscall(uint64 *args)
 
             break;
         }
+        case THREAD_PREPARE:
+        {
+            thread_t *handle = (thread_t*)args[1];
+            Body routine = (Body)args[2];
+            void *arguments = (void*)args[3];
+            uint64  *stack = (uint64*)args[4];
 
+            *handle = TCB::createThread( routine, arguments, stack, 0);
+
+            if(*handle)
+                return_value =0;
+            else
+                return_value=-1;
+            break;
+        }
         case THREAD_EXIT:{
             return_value = TCB::exit();
             break;
