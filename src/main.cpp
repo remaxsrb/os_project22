@@ -9,8 +9,6 @@
 extern void userMain();
 
 
-
-
 int main ()
 {
     Riscv::w_stvec((uint64) &Riscv::supervisorTrap);
@@ -24,9 +22,9 @@ int main ()
 
     userMain();
 
-    printString("=========== THREAD C API TEST PASSED =============\n");
+    //printString("=========== THREAD C API TEST PASSED =============\n");
 
-    //printString("=========== THREAD C++ API TEST PASSED =============\n");
+    printString("=========== THREAD C++ API TEST PASSED =============\n");
 
     return 0;
 }

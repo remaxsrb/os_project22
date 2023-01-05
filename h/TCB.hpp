@@ -52,8 +52,11 @@ private:
                      stack != nullptr ? (uint64) &stack[STACK_SIZE] : 0
                     }),
             timeSlice(DEFAULT_TIME_SLICE),
+            thread_id(thread_count++),
             systemThread(false),
             thread_status(CREATED)
+
+
 
     {
         if (body!= nullptr && runAtCreation)
@@ -71,7 +74,8 @@ private:
     uint64 *stack;
     Context context;
     uint64 timeSlice;
-
+    uint64 thread_id;
+    static uint64 thread_count;
     bool systemThread;
 
     uint8 thread_status;

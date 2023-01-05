@@ -36,7 +36,7 @@ uint64 Riscv::syscall(uint64 *args)
                 void *arguments = (void*)args[3];
                 uint64  *stack = (uint64*)args[4];
 
-                *handle = TCB::createThread( routine, arguments, stack, 1);
+                *handle = TCB::createThread( routine, arguments, stack, true);
 
                 if(*handle)
                     return_value =0;
@@ -52,7 +52,7 @@ uint64 Riscv::syscall(uint64 *args)
             void *arguments = (void*)args[3];
             uint64  *stack = (uint64*)args[4];
 
-            *handle = TCB::createThread( routine, arguments, stack, 0);
+            *handle = TCB::createThread( routine, arguments, stack, false);
 
             if(*handle)
                 return_value =0;
@@ -79,7 +79,6 @@ uint64 Riscv::syscall(uint64 *args)
 
         case THREAD_DELETE: {
             thread_t handle = (thread_t)args[1];
-            while (handle->getThreadStatus()==FINISHED) { TCB::dispatch(); }
             delete handle;
             break;
         }

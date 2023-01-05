@@ -148,7 +148,10 @@ int thread_delete(thread_t handle)
     if (!handle)
         return -1;
 
-    move_args();
+    __asm__ volatile("mv a1, %0" : : "r" (handle));
+
+    //move_args();
+    //iz nekog razloga move_args ne prenosi dobro pozive sa handle parametrom
     invoke_sys_call(THREAD_DELETE);
 
     return get_return_value();
