@@ -8,6 +8,7 @@
 
 char Console::getc()
 {
+
     return ::getc();
 }
 

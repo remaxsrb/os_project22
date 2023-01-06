@@ -20,8 +20,8 @@ enum Opcodes: uint64 {
     SEM_WAIT        = 0x23,
     SEM_SIGNAL      = 0x24,
     TIME_SLEEP      = 0x31,
-    GETC            = 0x41,
-    PUTC            = 0x42,
+    GET_C            = 0x41,
+    PUT_C            = 0x42,
 };
 
 

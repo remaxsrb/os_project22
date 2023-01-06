@@ -19,7 +19,7 @@ private:
     uint64 writeCursor;
     uint64 size;
     sem_t mutex;
-    sem_t space_availavle;
+    sem_t space_available;
     sem_t item_available;
 
 public:

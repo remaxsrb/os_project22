@@ -18,6 +18,7 @@ _ZN5Riscv14supervisorTrapEv:
     csrr t0, scause
     addi t0, t0, -8
     beqz t0, ecall_happened
+
     addi t0, t0, -1
     bnez t0, popregisters
 

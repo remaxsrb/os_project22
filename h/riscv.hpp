@@ -94,7 +94,8 @@ public:
 
     static buffer *buff;
     static SleepingThreads sleepingThreads;
-    static bool userMode;
+
+    static void setUserMode(bool mode);
 
 
 private:
@@ -103,6 +104,7 @@ private:
     static void handleSupervisorTrap();
     static void w_retval(uint64);
     static uint64  syscall(uint64*);
+    static bool userMode;
 
 
 };

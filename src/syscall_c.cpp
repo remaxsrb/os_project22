@@ -203,11 +203,13 @@ int time_sleep(time_t timeout)
 
 char getc()
 {
-    invoke_sys_call(GETC);
+    //printString("Udjoh u getc\n");
+    invoke_sys_call(GET_C);
     return (char)get_return_value();
 }
 void putc(char c)
 {
+    //printString("Udjoh u PUTC\n");
     move_args();
-    invoke_sys_call(PUTC);
+    invoke_sys_call(PUT_C);
 }

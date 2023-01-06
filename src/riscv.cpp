@@ -12,6 +12,8 @@ SleepingThreads Riscv::sleepingThreads;
 buffer* Riscv::buff = nullptr;
 bool Riscv:: userMode = false;
 
+void Riscv::setUserMode(bool mode) {userMode=mode;}
+
 void Riscv::popSppSpie()
 {
     if (userMode)
@@ -133,12 +135,16 @@ uint64 Riscv::syscall(uint64 *args)
             break;
         }
 
-        case GETC: {
+        case GET_C: {
+            //printString("Usao u GETC\n");
+
             return_value = buff->get_char();
             break;
         }
 
-        case PUTC: {
+        case PUT_C: {
+            //printString("Usao u RISCV PUTC\n");
+
             char c = (char)args[1];
             buff->put_char(c);
             break;
@@ -194,21 +200,19 @@ void Riscv::handleSupervisorTrap()
     }
     else if (scause == HARDWARE)
     {
+        printString("Usao u hardverski prekid\n");
         // interrupt: yes; cause code: supervisor external interrupt (PLIC; could be keyboard)
 
         int irq = plic_claim();
-
-        if(irq == CONSOLE_IRQ)
+        if (irq == CONSOLE_IRQ)
         {
-            while (*((char*)(CONSOLE_STATUS)) & CONSOLE_RX_STATUS_BIT) {
-
-                char c = (*(char*)CONSOLE_RX_DATA);
+            while (*((char*)CONSOLE_STATUS) & CONSOLE_RX_STATUS_BIT) {
+                __asm__ volatile("mv a1, %0" : : "r" (*((char *) CONSOLE_STATUS)));
+                char c = (*(char *) CONSOLE_RX_DATA);
                 buff->put_char(c);
-
             }
-            plic_complete(irq);
         }
-
+        plic_complete(irq);
 
     }
     else

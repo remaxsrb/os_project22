@@ -11,7 +11,8 @@ uint64 TCB::timeSliceCounter = 0;
 
 TCB *TCB::createThread( Body body, void *arg, uint64 *stack, bool runAtCreation)
 {
-   return new TCB(body, arg, stack, runAtCreation);
+   thread_t t = new TCB(body, arg, stack, runAtCreation);
+    return t;
 
 }
 void TCB::outputThreadBody(void *) {

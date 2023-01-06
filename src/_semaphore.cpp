@@ -4,7 +4,7 @@
 
 #include "../h/_semaphore.hpp"
 
-_sem::_sem(unsigned int init) : val(init) {}
+_sem::_sem(unsigned int init) : val(init), closed(false) {}
 
 _sem *_sem::createSemaphore(_sem **handle, unsigned int init) {
     *handle = new _sem(init);
@@ -13,6 +13,8 @@ _sem *_sem::createSemaphore(_sem **handle, unsigned int init) {
 
 int _sem::wait()
 {
+    if(closed)
+        return -1;
 
     if(--this->val<0)
         block();

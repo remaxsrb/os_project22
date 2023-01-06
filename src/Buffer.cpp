@@ -7,38 +7,36 @@
 buffer::buffer() : readCursor(0), writeCursor(0), size(0)
 {
     _sem::createSemaphore(&mutex, 1);
-    _sem::createSemaphore(&space_availavle, 0);
+    _sem::createSemaphore(&space_available, BUFFER_SIZE);
     _sem::createSemaphore(&item_available, 0);
 }
 
 buffer::~buffer()
 {
     delete mutex;
-    delete space_availavle;
+    delete space_available;
     delete item_available;
 }
 
 //read cursor je na karakteru za citanje iz bafera
 //write kursor je na mestu za upis u bafer
 
-//pise na konzolu
+//kupi sa konzole/puni bafer
 
 void buffer::put_char(char c)
 {
-    space_availavle->wait();
+    space_available->wait();
     mutex->wait();
 
     data[writeCursor] = c;
+    this->size++;
     writeCursor = (writeCursor+1) % BUFFER_SIZE;
 
-    bool signalItemAvailable = writeCursor != (BUFFER_SIZE-1);
-
     mutex->signal();
-    if(signalItemAvailable)
-        item_available->signal();
+    item_available->signal();
 }
 
-//cita sa konzole
+//salje na konzolu/prazni bafer
 char buffer::get_char()
 {
     item_available->wait();
@@ -48,7 +46,15 @@ char buffer::get_char()
     readCursor = (readCursor +1) % BUFFER_SIZE;
     this->size--;
     mutex->signal();
-    space_availavle->signal();
+    space_available->signal();
 
     return  c;
 }
+
+/*
+ * Na resenju roka iz juna 2016 postoje promenjive BLOCK_SIZE i NUM_OF_BLOCKS
+ * jer se u tom resenju metoda get implementirala tako sto se kupi ceo blok podataka.
+ *
+ * U mom slucaju posto kupim karakter po karakter, NUM_OF_BLOCKS je isto sto i BLOCK_SIZE jer jedan karakter
+ * se smesta u jedan element ovog niza. Zakljucak je da je onda meni BLOCK_SIZE = 1
+ * */

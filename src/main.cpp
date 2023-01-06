@@ -7,7 +7,15 @@
 #include "../tests/printing.hpp"
 #include "../h/Buffer.hpp"
 
+bool finishedMain = false;
 extern void userMain();
+void user_wrapper(void*)
+{
+    printString("UserMain() started.\n\n");
+    userMain();
+    printString("userMain() finished.\n");
+    finishedMain = true;
+}
 
 
 int main ()
@@ -16,19 +24,42 @@ int main ()
 
     MemoryAllocator::initialise_memory();
 
-    Riscv::buff = new buffer();
+
 
     TCB *outputThread;
     thread_create(&outputThread, &TCB::outputThreadBody, nullptr);
 
-    Riscv::ms_sstatus(Riscv::SSTATUS_SIE);
-
     TCB* main;
     thread_create(&main, nullptr, nullptr);
+
     TCB::running = main;
     TCB::running->setThreadStatus(RUNNING);
 
-    userMain();
+    Riscv::buff = new buffer();
+
+    Riscv::ms_sstatus(Riscv::SSTATUS_SIE);
+    Riscv::setUserMode(true);
+
+    Console::putc('P');
+    Console::putc('A');
+    Console::putc('R');
+    Console::putc('T');
+    Console::putc('I');
+    Console::putc('Z');
+    Console::putc('A');
+    Console::putc('N');
+
+
+
+    while (Riscv::buff->getSize() > 0) {
+        thread_dispatch();
+    }
+
+    //Riscv::userMode=true;
+
+
+
+    //userMain();
 
     //printString("=========== THREAD C API TEST PASSED =============\n");
 
