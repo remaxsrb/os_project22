@@ -17,8 +17,11 @@ class Riscv
 public:
 
 
+    static void initBuffer();
     // pop sstatus.spp and sstatus.spie bits (has to be a non inline function)
     static void popSppSpie();
+
+    static void setPriviledge();
 
     // read register scause
     static uint64 r_scause();

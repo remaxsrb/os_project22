@@ -40,7 +40,7 @@ void buffer::put_char(char c)
 char buffer::get_char()
 {
     item_available->wait();
-    mutex->wait();
+    //mutex->wait();
 
     char c = data[readCursor];
     readCursor = (readCursor +1) % BUFFER_SIZE;

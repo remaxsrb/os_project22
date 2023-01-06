@@ -3,8 +3,7 @@
 //
 
 #include "../h/riscv.hpp"
-#include "../tests/printing.hpp"
-#include "../h/_semaphore.hpp"
+
 
 using Body = void (*)(void*);
 SleepingThreads Riscv::sleepingThreads;
@@ -12,16 +11,26 @@ SleepingThreads Riscv::sleepingThreads;
 buffer* Riscv::buff = nullptr;
 bool Riscv:: userMode = false;
 
+//Ova metoda je neophodna jer ako se bafer direktno u mejnu inicijalizuje
+//dolazi do poremecaja u memoriji iz nekog razloga
+void Riscv::initBuffer()
+{
+    buff = new buffer();
+}
+
 void Riscv::setUserMode(bool mode) {userMode=mode;}
 
-void Riscv::popSppSpie()
+void Riscv::setPriviledge()
 {
     if (userMode)
         mc_sstatus(Riscv::SSTATUS_SPP);
 
     else
         ms_sstatus(Riscv::SSTATUS_SPP);
+}
 
+void Riscv::popSppSpie()
+{
     __asm__ volatile("csrw sepc, ra");
     __asm__ volatile("sret");
 }
@@ -175,11 +184,9 @@ void Riscv::handleSupervisorTrap()
 
         // interrupt: no; cause code: environment call from U-mode(8) or S-mode(9)
         uint64 volatile sepc = r_sepc() + 4;
-        uint64 volatile sstatus = r_sstatus();
 
         w_retval(syscall(args));
 
-        w_sstatus(sstatus);
         w_sepc(sepc);
     }
     else if (scause == SOFTWARE)
@@ -187,6 +194,7 @@ void Riscv::handleSupervisorTrap()
         // interrupt: yes; cause code: supervisor software interrupt (CLINT; machine timer interrupt)
 
         TCB::timeSliceCounter++;
+        sleepingThreads.tickFirst();
         if (TCB::timeSliceCounter >= TCB::running->getTimeSlice())
         {
             uint64 volatile sepc = r_sepc();
@@ -200,16 +208,18 @@ void Riscv::handleSupervisorTrap()
     }
     else if (scause == HARDWARE)
     {
-        printString("Usao u hardverski prekid\n");
-        // interrupt: yes; cause code: supervisor external interrupt (PLIC; could be keyboard)
 
+         //interrupt: yes; cause code: supervisor external interrupt (PLIC; could be keyboard)
+
+        static int IRQ_CONSOLE = 10;
         int irq = plic_claim();
-        if (irq == CONSOLE_IRQ)
+        if (irq == IRQ_CONSOLE)
         {
-            while (*((char*)CONSOLE_STATUS) & CONSOLE_RX_STATUS_BIT) {
-                __asm__ volatile("mv a1, %0" : : "r" (*((char *) CONSOLE_STATUS)));
-                char c = (*(char *) CONSOLE_RX_DATA);
+            volatile char status = *((char*)CONSOLE_STATUS);
+            while (status & CONSOLE_RX_STATUS_BIT){
+                char c = (*(char*)CONSOLE_RX_DATA);
                 buff->put_char(c);
+                status = *((char*)CONSOLE_STATUS);
             }
         }
         plic_complete(irq);

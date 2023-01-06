@@ -6,7 +6,7 @@
 #include "../h/opcodes.hpp"
 #include "../lib/console.h"
 #include "../tests/printing.hpp"
-uint64 timesentered = 0;
+
 
 
 inline void invoke_sys_call(uint64 opcode)
@@ -63,7 +63,9 @@ int mem_free(void *ptr)
     if (!ptr)
         return 0;
 
-    move_args();
+    //move_args();
+    __asm__ volatile ("mv a1, %0" : : "r" (ptr));
+
     invoke_sys_call(MEM_FREE);
 
     return get_return_value();
@@ -80,6 +82,7 @@ int thread_create(thread_t *handle, void (*start_routine)(void*), void *arg)
 
 
     void *stack = mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
+
 
     if (!stack)
         return -3;
@@ -126,7 +129,9 @@ int thread_start(thread_t handle)
     if (!handle)
         return -1;
 
-    move_args();
+    //move_args();
+    __asm__ volatile ("mv a1, %0" : : "r" (handle));
+
     invoke_sys_call(THREAD_START);
 
     return get_return_value();
@@ -151,6 +156,7 @@ int thread_delete(thread_t handle)
     __asm__ volatile("mv a1, %0" : : "r" (handle));
 
     //move_args();
+
     //iz nekog razloga move_args ne prenosi dobro pozive sa handle parametrom
     invoke_sys_call(THREAD_DELETE);
 
@@ -163,14 +169,20 @@ int sem_open (sem_t* handle, unsigned init)
     if(!handle)
         return -1;
 
-    move_args();
+    //move_args();
+    __asm__ volatile ("mv a1, %0" : : "r" (handle));
+    __asm__ volatile ("mv a2, %0" : : "r" (init));
+
+
     invoke_sys_call(SEM_OPEN);
 
     return get_return_value();
 }
 int sem_close(sem_t handle)
 {
-    move_args();
+    //move_args();
+    __asm__ volatile ("mv a1, %0" : : "r" (handle));
+
     invoke_sys_call(SEM_CLOSE);
     return get_return_value();
 }
@@ -179,7 +191,9 @@ int sem_wait(sem_t id)
     if(!id)
         return -1;
 
-    move_args();
+    //move_args();
+    __asm__ volatile ("mv a1, %0" : : "r" (id));
+
     invoke_sys_call(SEM_WAIT);
     return get_return_value();
 }
@@ -188,7 +202,9 @@ int sem_signal(sem_t id)
     if(!id)
         return -1;
 
-    move_args();
+    //move_args();
+    __asm__ volatile ("mv a1, %0" : : "r" (id));
+
     invoke_sys_call(SEM_SIGNAL);
     return get_return_value();
 }
@@ -196,20 +212,25 @@ int sem_signal(sem_t id)
 
 int time_sleep(time_t timeout)
 {
-    move_args();
+    //move_args();
+    __asm__ volatile ("mv a1, %0" : : "r" (timeout));
+
     invoke_sys_call(TIME_SLEEP);
     return get_return_value();
 }
 
 char getc()
 {
-    //printString("Udjoh u getc\n");
+
     invoke_sys_call(GET_C);
     return (char)get_return_value();
+    //return __getc();
 }
 void putc(char c)
 {
-    //printString("Udjoh u PUTC\n");
-    move_args();
+
+    //move_args();
+    __asm__ volatile ("mv a1, %0" : : "r" (c));
     invoke_sys_call(PUT_C);
+    //__putc(c);
 }

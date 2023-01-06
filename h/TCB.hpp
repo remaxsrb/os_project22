@@ -33,6 +33,10 @@ public:
 
     static TCB *createThread( Body body,  void *arg, uint64 *stack, bool runAtCreation);
 
+    static TCB *createOutputThread();
+    static TCB *createUserThread( Body body, void *arg);
+    static TCB *createMainThread();
+
 
     int start();
 
@@ -43,6 +47,12 @@ public:
     static void yield();
 
     static TCB *running;
+
+    static TCB *output;
+
+    static TCB *main;
+
+    static TCB *user;
 
 private:
     TCB(Body body, void *arg, uint64 *stack, bool runAtCreation) :

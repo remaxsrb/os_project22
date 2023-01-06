@@ -7,21 +7,68 @@
 
 
 TCB *TCB::running = nullptr;
+TCB *TCB::output = nullptr;
+TCB *TCB::user = nullptr;
+TCB *TCB::main = nullptr;
+
+//imam probleme prilikom pozivanja thread_create u mejnu a da pri tom ne pokrecem samo C_THREAD_API_TEST
+// ili CPP_THREAD_API_TEST koristeci console.lib
+
+//pokusaj da proradi mejn sa semaforima i mojom implementacijom koznole se sveo na to da svaka nit u mejnu dobije
+//svoju metodu za stvaranje TCB
+
 uint64 TCB::timeSliceCounter = 0;
 
 TCB *TCB::createThread( Body body, void *arg, uint64 *stack, bool runAtCreation)
 {
-   thread_t t = new TCB(body, arg, stack, runAtCreation);
-    return t;
+    return new TCB(body, arg, stack, runAtCreation);
+
 
 }
-void TCB::outputThreadBody(void *) {
-    while(true){
-        while((*((char*)(CONSOLE_STATUS)) & CONSOLE_TX_STATUS_BIT)){
-            char c = Riscv::buff->get_char();
-            *((char*)CONSOLE_TX_DATA) = c;
-        }
+
+TCB* TCB::createOutputThread()
+{
+    if(!output)
+    {
+        uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
+        output = createThread(outputThreadBody, nullptr, stack, 1);
     }
+    return output;
+}
+
+TCB* TCB::createMainThread()
+{
+    if(!main)
+    {
+        uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
+        main = createThread(nullptr, nullptr, stack, 1);
+        running = main;
+        main->thread_status=RUNNING;
+    }
+    return main;
+}
+
+
+TCB* TCB::createUserThread(Body body, void *arg)
+{
+    if(!user)
+    {
+        uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
+        user = createThread(body, arg, stack, 1);
+
+    }
+    return user;
+}
+
+
+void TCB::outputThreadBody(void *) {
+
+        while(true){
+            while((*((char*)CONSOLE_STATUS) & CONSOLE_TX_STATUS_BIT)){
+                char c = Riscv::buff->get_char();
+                *((char*)CONSOLE_TX_DATA) = c;
+            }
+        }
 }
 void TCB::yield()
 {
@@ -43,13 +90,14 @@ void TCB::dispatch()
 
     if (running)
         running->thread_status = RUNNING;
-
+    Riscv::setPriviledge();
     TCB::contextSwitch(&old->context, &running->context);
 }
 
 void TCB::threadWrapper()
 {
 
+    Riscv::setPriviledge();
     Riscv::popSppSpie();
     running->body(running->arg);
     running->setThreadStatus(FINISHED);

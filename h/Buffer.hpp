@@ -6,6 +6,7 @@
 #define OS_PROJECT2022_BUFFER_HPP
 
 #include "_semaphore.hpp"
+#include "../lib//hw.h"
 
 //implementacija bafera uzeta sa treceg kolokvijuma iz juna 2016
 
