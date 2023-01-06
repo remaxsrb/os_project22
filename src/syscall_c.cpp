@@ -34,15 +34,18 @@ inline uint64 get_return_value()
  * argumente pomeriti za registar i+1 kako se nista ne bi pregazilo prilikom poziva metode
  * invoke_sys_call gde se taj kod upisuje u a0 registar.
  *
+ * UPDATE: Uprkos tome sto se ovo cinila kao dobra ideja nemalo puta se argumenti nisu preneli kako treba
+ Stoga je ova metoda uklonjena iz resenja ali sam je ostavio implemeniranu kao ideju koju sam imao.
+ *
  * */
 
-inline void move_args()
-{
-    __asm__ volatile ("mv a4, a3");
-    __asm__ volatile ("mv a3, a2");
-    __asm__ volatile ("mv a2, a1");
-    __asm__ volatile ("mv a1, a0");
-}
+//inline void move_args()
+//{
+//    __asm__ volatile ("mv a4, a3");
+//    __asm__ volatile ("mv a3, a2");
+//    __asm__ volatile ("mv a2, a1");
+//    __asm__ volatile ("mv a1, a0");
+//}
 
 void *mem_alloc(size_t size)
 {
