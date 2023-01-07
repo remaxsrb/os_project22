@@ -52,7 +52,6 @@ int _sem::close()
     if(closed)
         return -1;
     closed = true;
-
     while(blocked.peekLast())
     {
         thread_t temp = blocked.removeLast();

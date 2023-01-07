@@ -6,60 +6,64 @@
 #include "../h/riscv.hpp"
 
 
-TCB *TCB::running = nullptr;
-TCB *TCB::output = nullptr;
-TCB *TCB::user = nullptr;
-TCB *TCB::main = nullptr;
+thread_t TCB::running = nullptr;
+thread_t TCB::output = nullptr;
+thread_t TCB::main = nullptr;
+//thread_t TCB::idle = nullptr;
 
 //imam probleme prilikom pozivanja thread_create u mejnu a da pri tom ne pokrecem samo C_THREAD_API_TEST
 // ili CPP_THREAD_API_TEST koristeci console.lib
 
-//pokusaj da proradi mejn sa semaforima i mojom implementacijom koznole se sveo na to da svaka nit u mejnu dobije
-//svoju metodu za stvaranje TCB
+//pokusaj da proradi mejn sa semaforima i mojom implementacijom koznole se sveo na to da svaka sistemska
+// nit u mejnu dobije svoju metodu za stvaranje TCB
 
 uint64 TCB::timeSliceCounter = 0;
 
-TCB *TCB::createThread( Body body, void *arg, uint64 *stack, bool runAtCreation)
+thread_t TCB::createThread( Body body, void *arg, uint64 *stack, bool runAtCreation)
 {
     return new TCB(body, arg, stack, runAtCreation);
-
-
 }
 
-TCB* TCB::createOutputThread()
+//thread_t TCB::createIdleThread()
+//{
+//    if(!idle)
+//    {
+//        uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
+//        idle = createThread(idleThreadBody, nullptr, stack, false);
+//        idle->thread_status=IDLE;
+//        idle->sysThread=true;
+//    }
+//    return idle;
+//}
+
+void TCB::idleThreadBody(void*)
+{
+    while (true) { thread_dispatch(); }
+}
+
+thread_t TCB::createOutputThread()
 {
     if(!output)
     {
         uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
-        output = createThread(outputThreadBody, nullptr, stack, 1);
+        output = createThread(outputThreadBody, nullptr, stack, true);
+        output->sysThread = true;
+
     }
     return output;
 }
 
-TCB* TCB::createMainThread()
+thread_t TCB::createMainThread()
 {
     if(!main)
     {
-        uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
-        main = createThread(nullptr, nullptr, stack, 1);
+        main = createThread(nullptr, nullptr, nullptr, false);
         running = main;
-        main->thread_status=RUNNING;
+        main->sysThread = true;
+
     }
     return main;
 }
-
-
-TCB* TCB::createUserThread(Body body, void *arg)
-{
-    if(!user)
-    {
-        uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
-        user = createThread(body, arg, stack, 1);
-
-    }
-    return user;
-}
-
 
 void TCB::outputThreadBody(void *) {
 
@@ -78,6 +82,13 @@ void TCB::yield()
 
 void TCB::dispatch()
 {
+
+    if(running==main)
+        printString("RUNNING IS MAIN IN DISPATCH\n");
+    else if (running==output)
+        printString("RUNNING IS OUTPUT IN DISPATCH\n");
+
+
     TCB *old = running;
     timeSliceCounter=0;
     if (old->thread_status == RUNNING)
@@ -88,8 +99,12 @@ void TCB::dispatch()
 
     running = Scheduler::get();
 
+    if (running==output)
+        printString("RUNNING IS OUTPUT IN DISPATCH AFTER SCHEDULER::GET\n");
+
     if (running)
         running->thread_status = RUNNING;
+
     Riscv::setPriviledge();
     TCB::contextSwitch(&old->context, &running->context);
 }
@@ -99,6 +114,9 @@ void TCB::threadWrapper()
 
     Riscv::setPriviledge();
     Riscv::popSppSpie();
+    if(running==output)
+        printString("RUNNING JE OUTPUT\n");
+
     running->body(running->arg);
     running->setThreadStatus(FINISHED);
     TCB::yield();
@@ -145,4 +163,6 @@ int TCB::sleep(time_t timeout)
     dispatch();
     return 0;
 }
+
+
 

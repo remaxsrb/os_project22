@@ -24,19 +24,21 @@ public:
 
     void setThreadStatus(uint8 status) { this->thread_status = status; }
 
+    bool isSysThread() const {return  sysThread;}
 
     static void outputThreadBody(void*);
+
+    static void idleThreadBody(void*);
 
     uint64 getTimeSlice() const { return timeSlice; }
 
     using Body = void (*)(void*);
 
-    static TCB *createThread( Body body,  void *arg, uint64 *stack, bool runAtCreation);
+    static thread_t createThread( Body body,  void *arg, uint64 *stack, bool runAtCreation);
 
-    static TCB *createOutputThread();
-    static TCB *createUserThread( Body body, void *arg);
-    static TCB *createMainThread();
-
+    static thread_t createOutputThread();
+    static thread_t createMainThread();
+    //static thread_t createIdleThread();
 
     int start();
 
@@ -46,31 +48,38 @@ public:
 
     static void yield();
 
-    static TCB *running;
+    static thread_t running;
 
-    static TCB *output;
+    static thread_t output;
 
-    static TCB *main;
+    static thread_t main;
 
-    static TCB *user;
+    //za potrebu ispravnog rada potrebna je jos jedna IDLE nit koja u pozadini poziva samo dispec i to je njena svrha
+
+    //static thread_t idle;
 
 private:
     TCB(Body body, void *arg, uint64 *stack, bool runAtCreation) :
             body(body),
             arg(arg),
             stack(body != nullptr ? stack : nullptr),
-            context({ (uint64) &threadWrapper,
-                     stack != nullptr ? (uint64) &stack[STACK_SIZE] : 0
+            context({ body!= nullptr ? (uint64) &threadWrapper : 0,
+                     body != nullptr ? (uint64) &stack[STACK_SIZE] : 0
                     }),
             timeSlice(DEFAULT_TIME_SLICE),
-            thread_status(CREATED)
-
-
+            thread_status(CREATED),
+            sysThread(false)
 
     {
         if (body!= nullptr && runAtCreation)
+        {
             Scheduler::put(this);
+            printString("Stavio sam nit u scheduler ori njenom stvaranju\n");
+        }
     }
+
+
+private:
 
     struct Context
     {
@@ -83,9 +92,11 @@ private:
     uint64 *stack;
     Context context;
     uint64 timeSlice;
-
     uint8 thread_status;
-    /*nit ce imati maksimalno sedam stanja te ce 8 bita biti vise nego dovoljno da se ona cuvaju
+
+    bool sysThread; // fleg da svaka nit zna da li je sistemska ili nije
+
+    /*nit ce imati maksimalno sest/sedam stanja te ce 8 bita biti vise nego dovoljno da se ona cuvaju
      * mozda bi bilo pametnije da se ovo uradi preko enuma na kraju
      *
      * 0 - CREATED

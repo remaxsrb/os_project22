@@ -9,7 +9,7 @@ using Body = void (*)(void*);
 SleepingThreads Riscv::sleepingThreads;
 
 buffer* Riscv::buff = nullptr;
-bool Riscv:: userMode = false;
+
 
 //Ova metoda je neophodna jer ako se bafer direktno u mejnu inicijalizuje
 //dolazi do poremecaja u memoriji iz nekog razloga
@@ -18,15 +18,12 @@ void Riscv::initBuffer()
     buff = new buffer();
 }
 
-void Riscv::setUserMode(bool mode) {userMode=mode;}
-
 void Riscv::setPriviledge()
 {
-    if (userMode)
-        mc_sstatus(Riscv::SSTATUS_SPP);
-
-    else
+    if (TCB::running->isSysThread())
         ms_sstatus(Riscv::SSTATUS_SPP);
+    else
+        mc_sstatus(Riscv::SSTATUS_SPP);
 }
 
 void Riscv::popSppSpie()
@@ -51,17 +48,18 @@ uint64 Riscv::syscall(uint64 *args)
             return_value = (uint64)__mem_free(ptr);
             break;}
         case THREAD_CREATE: {
-                thread_t *handle = (thread_t*)args[1];
-                Body routine = (Body)args[2];
-                void *arguments = (void*)args[3];
-                uint64  *stack = (uint64*)args[4];
+            printString("Kreiram korisnicku nit\n");
+            thread_t *handle = (thread_t*)args[1];
+            Body routine = (Body)args[2];
+            void *arguments = (void*)args[3];
+            uint64  *stack = (uint64*)args[4];
 
-                *handle = TCB::createThread( routine, arguments, stack, true);
+            *handle = TCB::createThread( routine, arguments, stack, true);
 
-                if(*handle)
-                    return_value =0;
-                else
-                    return_value=-1;
+            if(*handle)
+                return_value =0;
+            else
+                return_value=-1;
 
             break;
         }
@@ -145,15 +143,11 @@ uint64 Riscv::syscall(uint64 *args)
         }
 
         case GET_C: {
-            //printString("Usao u GETC\n");
-
             return_value = buff->get_char();
             break;
         }
 
         case PUT_C: {
-            //printString("Usao u RISCV PUTC\n");
-
             char c = (char)args[1];
             buff->put_char(c);
             break;
