@@ -95,7 +95,8 @@ public:
     // supervisor trap
     static void supervisorTrap();
 
-    static buffer *buff;
+    static buffer *buffIN;
+    static buffer *buffOUT;
     static SleepingThreads sleepingThreads;
 
 

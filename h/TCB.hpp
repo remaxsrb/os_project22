@@ -38,7 +38,6 @@ public:
 
     static thread_t createOutputThread();
     static thread_t createMainThread();
-    //static thread_t createIdleThread();
 
     int start();
 
@@ -54,10 +53,6 @@ public:
 
     static thread_t main;
 
-    //za potrebu ispravnog rada potrebna je jos jedna IDLE nit koja u pozadini poziva samo dispec i to je njena svrha
-
-    //static thread_t idle;
-
 private:
     TCB(Body body, void *arg, uint64 *stack, bool runAtCreation) :
             body(body),
@@ -67,17 +62,15 @@ private:
                      body != nullptr ? (uint64) &stack[STACK_SIZE] : 0
                     }),
             timeSlice(DEFAULT_TIME_SLICE),
-            thread_status(CREATED),
+            thread_status(body!= nullptr ? CREATED : RUNNING),
             sysThread(false)
-
     {
         if (body!= nullptr && runAtCreation)
         {
             Scheduler::put(this);
-            printString("Stavio sam nit u scheduler ori njenom stvaranju\n");
+            this->thread_status=READY;
         }
     }
-
 
 private:
 

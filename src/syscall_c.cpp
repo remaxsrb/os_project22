@@ -4,7 +4,6 @@
 
 #include "../h/syscall_c.hpp"
 #include "../h/opcodes.hpp"
-#include "../lib/console.h"
 #include "../tests/printing.hpp"
 
 

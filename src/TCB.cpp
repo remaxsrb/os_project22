@@ -9,7 +9,7 @@
 thread_t TCB::running = nullptr;
 thread_t TCB::output = nullptr;
 thread_t TCB::main = nullptr;
-//thread_t TCB::idle = nullptr;
+
 
 //imam probleme prilikom pozivanja thread_create u mejnu a da pri tom ne pokrecem samo C_THREAD_API_TEST
 // ili CPP_THREAD_API_TEST koristeci console.lib
@@ -24,21 +24,14 @@ thread_t TCB::createThread( Body body, void *arg, uint64 *stack, bool runAtCreat
     return new TCB(body, arg, stack, runAtCreation);
 }
 
-//thread_t TCB::createIdleThread()
-//{
-//    if(!idle)
-//    {
-//        uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
-//        idle = createThread(idleThreadBody, nullptr, stack, false);
-//        idle->thread_status=IDLE;
-//        idle->sysThread=true;
-//    }
-//    return idle;
-//}
+void TCB::outputThreadBody(void *) {
 
-void TCB::idleThreadBody(void*)
-{
-    while (true) { thread_dispatch(); }
+    while(true){
+        while((*((char*)CONSOLE_STATUS) & CONSOLE_TX_STATUS_BIT)){
+            char c = Riscv::buffOUT->get_char();
+            *((char*)CONSOLE_TX_DATA) = c;
+        }
+    }
 }
 
 thread_t TCB::createOutputThread()
@@ -48,7 +41,6 @@ thread_t TCB::createOutputThread()
         uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
         output = createThread(outputThreadBody, nullptr, stack, true);
         output->sysThread = true;
-
     }
     return output;
 }
@@ -58,22 +50,12 @@ thread_t TCB::createMainThread()
     if(!main)
     {
         main = createThread(nullptr, nullptr, nullptr, false);
-        running = main;
         main->sysThread = true;
-
+        running = main;
     }
     return main;
 }
 
-void TCB::outputThreadBody(void *) {
-
-        while(true){
-            while((*((char*)CONSOLE_STATUS) & CONSOLE_TX_STATUS_BIT)){
-                char c = Riscv::buff->get_char();
-                *((char*)CONSOLE_TX_DATA) = c;
-            }
-        }
-}
 void TCB::yield()
 {
     __asm__ volatile ("mv a0, %0" : : "r" (THREAD_DISPATCH));
@@ -83,14 +65,9 @@ void TCB::yield()
 void TCB::dispatch()
 {
 
-    if(running==main)
-        printString("RUNNING IS MAIN IN DISPATCH\n");
-    else if (running==output)
-        printString("RUNNING IS OUTPUT IN DISPATCH\n");
-
-
     TCB *old = running;
     timeSliceCounter=0;
+
     if (old->thread_status == RUNNING)
     {
         running->setThreadStatus(READY);
@@ -98,9 +75,6 @@ void TCB::dispatch()
     }
 
     running = Scheduler::get();
-
-    if (running==output)
-        printString("RUNNING IS OUTPUT IN DISPATCH AFTER SCHEDULER::GET\n");
 
     if (running)
         running->thread_status = RUNNING;
@@ -111,12 +85,8 @@ void TCB::dispatch()
 
 void TCB::threadWrapper()
 {
-
     Riscv::setPriviledge();
     Riscv::popSppSpie();
-    if(running==output)
-        printString("RUNNING JE OUTPUT\n");
-
     running->body(running->arg);
     running->setThreadStatus(FINISHED);
     TCB::yield();
@@ -131,7 +101,6 @@ int TCB::wake()
     Scheduler::put(running);
     return 0;
 }
-
 
 int TCB::start()
 {
@@ -152,7 +121,6 @@ int TCB::exit()
     dispatch();
     return 0;
 }
-
 
 int TCB::sleep(time_t timeout)
 {

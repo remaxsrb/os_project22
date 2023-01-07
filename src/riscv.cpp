@@ -8,14 +8,18 @@
 using Body = void (*)(void*);
 SleepingThreads Riscv::sleepingThreads;
 
-buffer* Riscv::buff = nullptr;
+buffer* Riscv::buffIN = nullptr;
+buffer* Riscv::buffOUT = nullptr;
+
+
 
 
 //Ova metoda je neophodna jer ako se bafer direktno u mejnu inicijalizuje
 //dolazi do poremecaja u memoriji iz nekog razloga
 void Riscv::initBuffer()
 {
-    buff = new buffer();
+    buffIN = new buffer();
+    buffOUT = new buffer();
 }
 
 void Riscv::setPriviledge()
@@ -48,7 +52,6 @@ uint64 Riscv::syscall(uint64 *args)
             return_value = (uint64)__mem_free(ptr);
             break;}
         case THREAD_CREATE: {
-            printString("Kreiram korisnicku nit\n");
             thread_t *handle = (thread_t*)args[1];
             Body routine = (Body)args[2];
             void *arguments = (void*)args[3];
@@ -143,13 +146,13 @@ uint64 Riscv::syscall(uint64 *args)
         }
 
         case GET_C: {
-            return_value = buff->get_char();
+            return_value = buffIN->get_char();
             break;
         }
 
         case PUT_C: {
             char c = (char)args[1];
-            buff->put_char(c);
+            buffOUT->put_char(c);
             break;
         }
 
@@ -193,8 +196,9 @@ void Riscv::handleSupervisorTrap()
         {
             uint64 volatile sepc = r_sepc();
             uint64 volatile sstatus = r_sstatus();
-            TCB::timeSliceCounter = 0;
+
             TCB::dispatch();
+
             w_sstatus(sstatus);
             w_sepc(sepc);
         }
@@ -212,7 +216,7 @@ void Riscv::handleSupervisorTrap()
             volatile char status = *((char*)CONSOLE_STATUS);
             while (status & CONSOLE_RX_STATUS_BIT){
                 char c = (*(char*)CONSOLE_RX_DATA);
-                buff->put_char(c);
+                buffIN->put_char(c);
                 status = *((char*)CONSOLE_STATUS);
             }
         }
