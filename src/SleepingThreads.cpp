@@ -4,96 +4,62 @@
 
 #include "../h/SleepingThreads.hpp"
 
-void SleepingThreads::put(thread_t thread, time_t timeout)
-{
-    if(thread!= nullptr)
-        thread->setThreadStatus(SLEEPING);
+time_t SleepingThreads::passed = 0;
 
-    if(!head)
-    {
-        head = new Elem(thread, nullptr, timeout);
-        tail = head;
-    }
+time_t SleepingThreads::total_passed = 0;
+
+SleepingThreads SleepingThreads::sleepingThreadsList;
+
+void SleepingThreads::insert(thread_t thread, time_t timeout) {
+
+    SleepingThread *node = new SleepingThread(thread, timeout);
+    Elem *head = sleepingThreadsList.head;
+
+    if(!head || (node->timeout < head->data->timeout))
+        sleepingThreadsList.addFirst(node);
     else
     {
-        Elem* temp = head;
-        Elem* prev = nullptr;
+        Elem *prev = head;
 
-        while (temp != tail && timeout >= temp->relative_time) {
-
-            /*relativno vreme za novu nit se dobija oduzimanjem vremena uspavljivanja nove niti i
-             * relativnog vremena svih niti iza koje treba da se umetne u listu. To sve pod uslovom
-             * da se nova nit ubacuje iza neke niti.*/
-
-            timeout -= temp->relative_time;
-            prev = temp;
-            temp = temp->next;
-        }
-
-        if(temp==tail)
+        for (Elem *curr = head->next; curr; curr = curr->next)
         {
-            /*proverava se ovaj uslov jer nije nuzno timeout veci od relativnog vremena niti na kraju liste
-             * iako se to proveravalo u prethodnoj petlji*/
-            if(timeout >= tail->relative_time)
+            if(node->timeout < curr->data->timeout)
             {
-                Elem *novi = new Elem(thread, nullptr,  timeout-=tail->relative_time);
-                tail->next = novi;
-                tail = novi;
+                sleepingThreadsList.insertAfter(prev,node);
+                return;
             }
-            else
-            {
-                //situacija kada se nit umece izmedju taila i prethodnika taila
-                Elem* novi = new Elem(thread, tail, timeout);
-
-                if(prev)
-                    prev->next=novi;
-
-                    //situacija kada su head i tail isti element i ubacuje se ispred heda.
-                else
-                    head = novi;
-            }
-            tail->relative_time-=timeout;
+            prev = curr;
         }
-        else
-        {
-            Elem *novi = new Elem(thread, temp, timeout);
-            if(prev)
-                prev->next = novi;
-            else
-                head=novi;
-        }
-        temp->relative_time -=timeout;
+        sleepingThreadsList.addLast(node);
     }
+
+
 }
 
-void SleepingThreads::removeAwakenedThreads()
-{
-    while (head!= nullptr && head->relative_time==0)
+thread_t SleepingThreads::pop() {
+
+    if (sleepingThreadsList.size() <= 0) { return nullptr; }
+    SleepingThread *st = sleepingThreadsList.removeFirst();
+    thread_t t = st->thread;
+    delete st;
+    return t;
+}
+
+void SleepingThreads::tick() {
+
+    total_passed++;
+    if(sleepingThreadsList.size() > 0)
+        passed++;
+    else
+        passed = 0;
+
+    while (sleepingThreadsList.size() > 0 &&
+           sleepingThreadsList.peekFirst()->timeout <= passed)
     {
-        Elem *temp = head;
-        head = head->next;
-
-        if(!head)
-            tail = nullptr;
-
-        temp->data->setThreadStatus(READY);
-        Scheduler::put(temp->data);
-        delete temp;
+        thread_t t = pop();
+        t->setThreadStatus(READY);
+        Scheduler::put(t);
 
     }
-}
 
-void SleepingThreads::tickFirst()
-{
-    if (head)
-        head->relative_time -= 1;
-
-}
-
-time_t SleepingThreads::peekFirstSlice()
-{
-    if (!head)
-        return -1;
-
-    return head->relative_time;
 }

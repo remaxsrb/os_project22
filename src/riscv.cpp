@@ -7,7 +7,7 @@
 
 
 using Body = void (*)(void*);
-SleepingThreads Riscv::sleepingThreads;
+
 
 buffer* Riscv::buffIN = nullptr;
 buffer* Riscv::buffOUT = nullptr;
@@ -139,7 +139,13 @@ uint64 Riscv::syscall(uint64 *args)
 
         case TIME_SLEEP: {
             time_t timeout = (time_t)args[1];
-            sleepingThreads.put(TCB::running, timeout);
+            if(TCB::running->getThreadStatus() != RUNNING)
+            {
+                return_value = -1;
+                break;
+            }
+            TCB::running->setThreadStatus(SLEEPING);
+            SleepingThreads::insert(TCB::running, timeout);
             TCB::dispatch();
             return_value = 0;
             break;
@@ -192,7 +198,7 @@ void Riscv::handleSupervisorTrap()
          //interrupt: yes; cause code: supervisor software interrupt (CLINT; machine timer interrupt)
 
         TCB::timeSliceCounter++;
-        sleepingThreads.tickFirst();
+        SleepingThreads::tick();
         if (TCB::timeSliceCounter >= TCB::running->getTimeSlice())
         {
             uint64 volatile sepc = r_sepc();
@@ -204,6 +210,7 @@ void Riscv::handleSupervisorTrap()
             w_sepc(sepc);
         }
         mc_sip(SIP_SSIP);
+
     }
     else if (scause == HARDWARE)
     {

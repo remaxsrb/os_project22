@@ -89,16 +89,6 @@ void TCB::threadWrapper()
     TCB::yield();
 }
 
-int TCB::wake()
-{
-    if (running->thread_status != SLEEPING) {
-        return -1;
-    }
-    running->thread_status = READY;
-    Scheduler::put(running);
-    return 0;
-}
-
 int TCB::start()
 {
     if (this->getThreadStatus() != CREATED) {
@@ -119,15 +109,7 @@ int TCB::exit()
     return 0;
 }
 
-int TCB::sleep(time_t timeout)
-{
-    if(running->getThreadStatus()!= RUNNING)
-        return -1;
 
-    Riscv::sleepingThreads.put(running, timeout);
-    dispatch();
-    return 0;
-}
 
 
 

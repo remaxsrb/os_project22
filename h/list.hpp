@@ -11,6 +11,8 @@ template<typename T>
 class List
 {
 private:
+    uint64  count;
+protected:
     struct Elem
     {
         T *data;
@@ -22,6 +24,15 @@ private:
         void operator delete(void *ptr) { __mem_free(ptr); }
     };
 
+    void insertAfter(Elem *node, T *data)
+    {
+        if (!node) return;
+        Elem *next = node->next;
+        node->next = new Elem(data, next);
+        count++;
+    }
+
+    uint64 size() {return count;}
 
     Elem *head, *tail;
 
@@ -37,6 +48,7 @@ public:
         Elem *elem = new Elem(data, head);
         head = elem;
         if (!tail) { tail = head; }
+        count++;
     }
 
     void addLast(T *data)
@@ -50,6 +62,7 @@ public:
         {
             head = tail = elem;
         }
+        count++;
     }
 
     T *removeFirst()
@@ -62,6 +75,7 @@ public:
 
         T *ret = elem->data;
         delete elem;
+        count--;
         return ret;
     }
 
@@ -88,6 +102,7 @@ public:
 
         T *ret = elem->data;
         delete elem;
+        count--;
         return ret;
     }
 

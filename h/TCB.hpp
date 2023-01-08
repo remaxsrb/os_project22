@@ -112,10 +112,6 @@ private:
 
     static int exit(); //gasenje trenutne niti
 
-    static int sleep(time_t); //trenutna nit odlaze svoj rad za zadati broj otkucaja
-
-    static int wake(); // budi trenutnu nit ako je uspavana
-
     static uint64 timeSliceCounter;
 
 };

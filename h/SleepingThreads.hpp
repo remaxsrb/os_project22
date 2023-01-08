@@ -7,32 +7,37 @@
 
 
 #include "../h/TCB.hpp"
+//prvobitno resenje mi je bilo da sam pravim listu uspavanih niti kao skroz novu klasu
+//onda sam shvatio da cu imati mnogo manje glavobolje i prostora za gresku ako nasledim sablonsku listu
+// i onda samo vodim racuna o uslovima za ubacivanje a ne i o samom ubacivanju
 
+struct SleepingThread{
+    thread_t thread;
+    time_t timeout;
+    SleepingThread(thread_t _t, time_t _timeout) : thread(_t), timeout(_timeout) {}
 
-class SleepingThreads{
+    void *operator new(size_t size) { return __mem_alloc(size); }
+    void operator delete(void *ptr) { __mem_free(ptr); }
+
+};
+
+class SleepingThreads : public  List<SleepingThread>{
 
 private:
-    struct Elem{
-        thread_t data;
-        Elem* next;
-        time_t relative_time;
+    static thread_t pop();
 
-        Elem(thread_t data, Elem* next, time_t relative_time) : data(data), next(next), relative_time(relative_time) {}
+    static time_t passed;
 
-    };
-    Elem *head, *tail;
+    static time_t total_passed;
+
 public:
-    SleepingThreads(): head(nullptr), tail(nullptr) {}
 
-    SleepingThreads(const SleepingThreads&) = delete;
-    SleepingThreads &operator=(const SleepingThreads&) = delete;
+    static void insert(thread_t thread, time_t timeout);
 
-    void put(thread_t thread, time_t timeout);
+    static void tick();
 
-    void removeAwakenedThreads();
+    static SleepingThreads sleepingThreadsList;
 
-    void tickFirst();
-    time_t peekFirstSlice();
 };
 
 #endif //OS_PROJECT2022_SLEEPINGTHREADS_HPP

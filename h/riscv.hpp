@@ -98,7 +98,6 @@ public:
 
     static buffer *buffIN;
     static buffer *buffOUT;
-    static SleepingThreads sleepingThreads;
 
 
 private:
