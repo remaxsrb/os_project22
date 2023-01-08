@@ -31,7 +31,6 @@ public:
 
     void removeAwakenedThreads();
 
-
     void tickFirst();
     time_t peekFirstSlice();
 };

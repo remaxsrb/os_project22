@@ -6,14 +6,16 @@
 
 buffer::buffer() : readCursor(0), writeCursor(0), size(0)
 {
-    _sem::createSemaphore(&mutex, 1);
+    _sem::createSemaphore(&mutex_get, 1);
+    _sem::createSemaphore(&mutex_put, 1);
     _sem::createSemaphore(&space_available, BUFFER_SIZE);
     _sem::createSemaphore(&item_available, 0);
 }
 
 buffer::~buffer()
 {
-    delete mutex;
+    delete mutex_get;
+    delete mutex_put;
     delete space_available;
     delete item_available;
 }
@@ -26,13 +28,13 @@ buffer::~buffer()
 void buffer::put_char(char c)
 {
     space_available->wait();
-    mutex->wait();
+    mutex_put->wait();
 
     data[writeCursor] = c;
     this->size++;
     writeCursor = (writeCursor+1) % BUFFER_SIZE;
 
-    mutex->signal();
+    mutex_put->signal();
     item_available->signal();
 }
 
@@ -40,12 +42,12 @@ void buffer::put_char(char c)
 char buffer::get_char()
 {
     item_available->wait();
-    //mutex->wait();
+    mutex_get->wait();
 
     char c = data[readCursor];
     readCursor = (readCursor +1) % BUFFER_SIZE;
     this->size--;
-    mutex->signal();
+    mutex_get->signal();
     space_available->signal();
 
     return  c;

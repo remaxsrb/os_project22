@@ -11,7 +11,6 @@
 #include "threadcodes.hpp"
 #include "../lib/mem.h"
 #include "syscall_cpp.hpp"
-#include "../tests/printing.hpp"
 
 
 // Thread Control Block
@@ -28,7 +27,6 @@ public:
 
     static void outputThreadBody(void*);
 
-    static void idleThreadBody(void*);
 
     uint64 getTimeSlice() const { return timeSlice; }
 
@@ -59,7 +57,7 @@ private:
             arg(arg),
             stack(body != nullptr ? stack : nullptr),
             context({ body!= nullptr ? (uint64) &threadWrapper : 0,
-                     body != nullptr ? (uint64) &stack[STACK_SIZE] : 0
+                     body != nullptr ? (uint64) &stack[DEFAULT_STACK_SIZE] : 0
                     }),
             timeSlice(DEFAULT_TIME_SLICE),
             thread_status(body!= nullptr ? CREATED : RUNNING),
@@ -120,8 +118,6 @@ private:
 
     static uint64 timeSliceCounter;
 
-    static uint64 constexpr STACK_SIZE = 1024;
-    static uint64 constexpr TIME_SLICE = 2;
 };
 
 

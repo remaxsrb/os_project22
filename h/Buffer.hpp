@@ -19,7 +19,8 @@ private:
     uint64 readCursor;
     uint64 writeCursor;
     uint64 size;
-    sem_t mutex;
+    sem_t mutex_get;
+    sem_t mutex_put;
     sem_t space_available;
     sem_t item_available;
 

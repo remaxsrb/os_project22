@@ -4,6 +4,8 @@
 
 
 #include "../h/riscv.hpp"
+//#include "../h/myprint.hpp"
+#include "../tests/printing.hpp"
 
 extern void userMain();
 
@@ -12,15 +14,14 @@ void user_wrapper(void *sem)
     printString("userMain() started\n");
     userMain();
     printString("userMain() finished\n");
-    //sem_signal((sem_t)sem);
+    sem_signal((sem_t)sem);
 }
 
 int main ()
 {
-
+    Riscv::w_stvec((uint64) &Riscv::supervisorTrap);
     MemoryAllocator::initialise_memory();
     Riscv::initBuffer();
-    Riscv::w_stvec((uint64) &Riscv::supervisorTrap);
 
     thread_t mainThread = TCB::createMainThread();
     thread_t outputThread = TCB::createOutputThread();
@@ -29,25 +30,27 @@ int main ()
 
     printString("main() started\n");
 
-    //sem_t userSem = nullptr;
-    //sem_open(&userSem, 0);
+    sem_t userSem;
+    sem_open(&userSem, 0);
 
-    thread_t userThread = nullptr;
-    thread_create(&userThread, user_wrapper, nullptr);
+    thread_t userThread ;
+    thread_create(&userThread, user_wrapper, userSem);
 
-    //sem_wait(userSem);
+    sem_wait(userSem);
+
+    printString("main() ended\n");
 
     while (Riscv::buffOUT->getSize() > 0)
         thread_dispatch();
-
-    printString("main() ended\n");
 
     Riscv::mc_sstatus(Riscv::SSTATUS_SIE);
 
     delete mainThread;
     delete outputThread;
     delete userThread;
-    //delete userSem;
+    delete Riscv::buffIN;
+    delete Riscv::buffOUT;
+    delete userSem;
 
     return 0;
 }

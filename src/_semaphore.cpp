@@ -4,15 +4,16 @@
 
 #include "../h/_semaphore.hpp"
 
-_sem::_sem(unsigned int init) : val(init), closed(false) {}
+_sem::_sem( int init) : val(init), closed(false) {}
 
-_sem *_sem::createSemaphore(_sem **handle, unsigned int init) {
+_sem *_sem::createSemaphore(sem_t *handle,  int init) {
     *handle = new _sem(init);
     return *handle;
 }
 
 int _sem::wait()
 {
+
     if(closed)
         return -1;
 

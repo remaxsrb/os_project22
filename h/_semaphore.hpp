@@ -11,10 +11,10 @@
 
 class _sem {
 private:
-    uint8 val;
+    int val;
     List<TCB> blocked;
     bool closed;
-    _sem(unsigned int init);
+    _sem( int init);
 protected:
     void block();
     void unblock();
@@ -24,7 +24,7 @@ public:
 
     void operator delete(void *ptr) { __mem_free(ptr); }
 
-    static _sem *createSemaphore(_sem** handle, unsigned init);
+    static _sem *createSemaphore(sem_t * handle, int init);
 
     int wait();
     int signal();

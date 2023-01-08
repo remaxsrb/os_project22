@@ -6,7 +6,6 @@
 
 void SleepingThreads::put(thread_t thread, time_t timeout)
 {
-
     if(thread!= nullptr)
         thread->setThreadStatus(SLEEPING);
 
@@ -37,8 +36,7 @@ void SleepingThreads::put(thread_t thread, time_t timeout)
              * iako se to proveravalo u prethodnoj petlji*/
             if(timeout >= tail->relative_time)
             {
-                timeout-=tail->relative_time;
-                Elem *novi = new Elem(thread, nullptr, timeout);
+                Elem *novi = new Elem(thread, nullptr,  timeout-=tail->relative_time);
                 tail->next = novi;
                 tail = novi;
             }

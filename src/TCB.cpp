@@ -64,22 +64,18 @@ void TCB::yield()
 
 void TCB::dispatch()
 {
-
+    timeSliceCounter = 0;
     TCB *old = running;
-    timeSliceCounter=0;
 
-    if (old->thread_status == RUNNING)
-    {
-        running->setThreadStatus(READY);
+    if (old->thread_status == RUNNING) {
+        old->thread_status = READY;
         Scheduler::put(old);
+
     }
-
     running = Scheduler::get();
-
     if (running)
         running->thread_status = RUNNING;
 
-    Riscv::setPriviledge();
     TCB::contextSwitch(&old->context, &running->context);
 }
 

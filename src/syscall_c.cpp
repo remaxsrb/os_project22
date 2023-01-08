@@ -63,10 +63,10 @@ int thread_create(thread_t *handle, void (*start_routine)(void*), void *arg)
     if (!stack)
         return -3;
 
-    __asm__ volatile("mv a1, %0" : : "r" (handle));
-    __asm__ volatile("mv a2, %0" : : "r" (start_routine));
-    __asm__ volatile("mv a3, %0" : : "r" (arg));
     __asm__ volatile("mv a4, %0" : : "r" (stack));
+    __asm__ volatile("mv a3, %0" : : "r" (arg));
+    __asm__ volatile("mv a2, %0" : : "r" (start_routine));
+    __asm__ volatile("mv a1, %0" : : "r" (handle));
 
     invoke_sys_call(THREAD_CREATE);
 
@@ -86,10 +86,10 @@ int thread_prepare(thread_t *handle, void (*start_routine)(void*), void *arg)
     if (!stack)
         return -3;
 
-    __asm__ volatile("mv a1, %0" : : "r" (handle));
-    __asm__ volatile("mv a2, %0" : : "r" (start_routine));
-    __asm__ volatile("mv a3, %0" : : "r" (arg));
     __asm__ volatile("mv a4, %0" : : "r" (stack));
+    __asm__ volatile("mv a3, %0" : : "r" (arg));
+    __asm__ volatile("mv a2, %0" : : "r" (start_routine));
+    __asm__ volatile("mv a1, %0" : : "r" (handle));
     invoke_sys_call(THREAD_PREPARE);
 
     return get_return_value();
@@ -131,12 +131,12 @@ int thread_delete(thread_t handle)
 
 int sem_open (sem_t* handle, unsigned init)
 {
-
     if(!handle)
         return -1;
 
-    __asm__ volatile ("mv a1, %0" : : "r" (handle));
     __asm__ volatile ("mv a2, %0" : : "r" (init));
+    __asm__ volatile ("mv a1, %0" : : "r" (handle));
+
     invoke_sys_call(SEM_OPEN);
 
     return get_return_value();

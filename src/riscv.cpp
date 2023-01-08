@@ -3,6 +3,7 @@
 //
 
 #include "../h/riscv.hpp"
+#include "../tests/printing.hpp"
 
 
 using Body = void (*)(void*);
@@ -10,9 +11,6 @@ SleepingThreads Riscv::sleepingThreads;
 
 buffer* Riscv::buffIN = nullptr;
 buffer* Riscv::buffOUT = nullptr;
-
-
-
 
 //Ova metoda je neophodna jer ako se bafer direktno u mejnu inicijalizuje
 //dolazi do poremecaja u memoriji iz nekog razloga
@@ -126,8 +124,10 @@ uint64 Riscv::syscall(uint64 *args)
         }
 
         case SEM_WAIT: {
+
             sem_t handle = (sem_t)args[1];
             return_value = handle->wait();
+
             break;
         }
 
@@ -176,6 +176,7 @@ void Riscv::handleSupervisorTrap()
     __asm__ volatile ("mv %0, a4" : "=r" (args[4]));
 
     uint64 scause = r_scause();
+
     if (scause == ECALL_USER || scause == ECALL_SUPER)
     {
 
@@ -188,7 +189,7 @@ void Riscv::handleSupervisorTrap()
     }
     else if (scause == SOFTWARE)
     {
-        // interrupt: yes; cause code: supervisor software interrupt (CLINT; machine timer interrupt)
+         //interrupt: yes; cause code: supervisor software interrupt (CLINT; machine timer interrupt)
 
         TCB::timeSliceCounter++;
         sleepingThreads.tickFirst();
@@ -209,9 +210,8 @@ void Riscv::handleSupervisorTrap()
 
          //interrupt: yes; cause code: supervisor external interrupt (PLIC; could be keyboard)
 
-        static int IRQ_CONSOLE = 10;
         int irq = plic_claim();
-        if (irq == IRQ_CONSOLE)
+        if (irq == CONSOLE_IRQ)
         {
             volatile char status = *((char*)CONSOLE_STATUS);
             while (status & CONSOLE_RX_STATUS_BIT){
