@@ -5,6 +5,9 @@
 #ifndef OS_PROJECT2022_MEMORYALLOCATOR_HPP
 #define OS_PROJECT2022_MEMORYALLOCATOR_HPP
 
+//resenje kombinuje razne rokove
+//K2 2015, K2 2014 i septembar 2015
+
 #include "../lib/hw.h"
 #include "MemoryPiece.hpp"
 

@@ -9,6 +9,8 @@
 #include "list.hpp"
 #include "../lib/mem.h"
 
+//implementacija semafora je uzeta iz udzbenika
+
 class _sem {
 private:
     int val;

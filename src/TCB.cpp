@@ -76,6 +76,7 @@ void TCB::dispatch()
     if (running)
         running->thread_status = RUNNING;
 
+    Riscv::setPriviledge();
     TCB::contextSwitch(&old->context, &running->context);
 }
 

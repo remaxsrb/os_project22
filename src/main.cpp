@@ -4,7 +4,6 @@
 
 
 #include "../h/riscv.hpp"
-//#include "../h/myprint.hpp"
 #include "../tests/printing.hpp"
 
 extern void userMain();
@@ -21,7 +20,7 @@ int main ()
 {
     Riscv::w_stvec((uint64) &Riscv::supervisorTrap);
     MemoryAllocator::initialise_memory();
-    Riscv::initBuffer();
+    Riscv::initBuffers();
 
     thread_t mainThread = TCB::createMainThread();
     thread_t outputThread = TCB::createOutputThread();

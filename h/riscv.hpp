@@ -18,7 +18,7 @@ class Riscv
 public:
 
 
-    static void initBuffer();
+    static void initBuffers();
     // pop sstatus.spp and sstatus.spie bits (has to be a non inline function)
     static void popSppSpie();
 

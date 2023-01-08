@@ -14,7 +14,7 @@ buffer* Riscv::buffOUT = nullptr;
 
 //Ova metoda je neophodna jer ako se bafer direktno u mejnu inicijalizuje
 //dolazi do poremecaja u memoriji iz nekog razloga
-void Riscv::initBuffer()
+void Riscv::initBuffers()
 {
     buffIN = new buffer();
     buffOUT = new buffer();
