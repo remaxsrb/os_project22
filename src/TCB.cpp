@@ -28,7 +28,7 @@ void TCB::outputThreadBody(void *) {
 
     while(true){
         while((*((char*)CONSOLE_STATUS) & CONSOLE_TX_STATUS_BIT)){
-            char c = Riscv::buffOUT->get_char();
+            char c = Riscv::buffOUT->kernel_take();
             *((char*)CONSOLE_TX_DATA) = c;
         }
     }

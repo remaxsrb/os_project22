@@ -152,13 +152,13 @@ uint64 Riscv::syscall(uint64 *args)
         }
 
         case GET_C: {
-            return_value = buffIN->get_char();
+            return_value = buffIN->kernel_take();
             break;
         }
 
         case PUT_C: {
             char c = (char)args[1];
-            buffOUT->put_char(c);
+            buffOUT->kernel_append(c);
             break;
         }
 
@@ -215,15 +215,18 @@ void Riscv::handleSupervisorTrap()
     else if (scause == HARDWARE)
     {
 
-         //interrupt: yes; cause code: supervisor external interrupt (PLIC; could be keyboard)
+        //interrupt: yes; cause code: supervisor external interrupt (PLIC; could be keyboard)
 
         int irq = plic_claim();
-        if (irq == CONSOLE_IRQ)
+        if (irq == CONSOLE_IRQ) //prekid od tastature
         {
+
             volatile char status = *((char*)CONSOLE_STATUS);
-            while (status & CONSOLE_RX_STATUS_BIT){
+            while (status & CONSOLE_RX_STATUS_BIT)
+            {
                 char c = (*(char*)CONSOLE_RX_DATA);
-                buffIN->put_char(c);
+                buffIN->kernel_append(c);
+                buffOUT->kernel_append(c);
                 status = *((char*)CONSOLE_STATUS);
             }
         }

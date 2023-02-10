@@ -19,8 +19,9 @@ private:
     uint64 readCursor;
     uint64 writeCursor;
     uint64 size;
-    sem_t mutex_get;
-    sem_t mutex_put;
+    //sem_t mutex_take;
+    //sem_t mutex_append;
+    sem_t mutex;
     sem_t space_available;
     sem_t item_available;
 
@@ -29,8 +30,9 @@ public:
     buffer();
     ~buffer();
 
-    char get_char();
-    void put_char(char c);
+    char kernel_take();
+    char user_take();
+    void kernel_append(char c);
 
     uint64 getSize() const {return  this->size;}
 
