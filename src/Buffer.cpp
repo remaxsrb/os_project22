@@ -28,7 +28,7 @@ void buffer::append(char c)
     space_available->wait();
     mutex->wait();
 
-    //kriticka sekcija
+    //kritina sekcija
 
     data[writeCursor] = c;
     this->size++;
@@ -44,7 +44,9 @@ char buffer::take()
 {
     item_available->wait();
     mutex->wait();
-    //kriticka sekcija
+
+    //kriticna sekcija
+
     char c = data[readCursor];
     readCursor = (readCursor +1) % BUFFER_SIZE;
     this->size--;

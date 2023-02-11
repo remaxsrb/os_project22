@@ -23,6 +23,7 @@ int main ()
     Riscv::initBuffers();
 
     thread_t mainThread = TCB::createMainThread();
+    thread_t idleThread = TCB::createIdleThread();
     thread_t outputThread = TCB::createOutputThread();
 
     Riscv::ms_sstatus(Riscv::SSTATUS_SIE);
@@ -47,6 +48,7 @@ int main ()
     delete mainThread;
     delete outputThread;
     delete userThread;
+    delete idleThread;
     delete Riscv::buffIN;
     delete Riscv::buffOUT;
     delete userSem;

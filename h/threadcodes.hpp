@@ -13,8 +13,8 @@ enum ThreadCodes : uint8 {
         READY = 2,
         WAITING = 3,
         SLEEPING = 4,
-        IDLE = 5,
-        FINISHED = 6,
+        FINISHED = 5,
+        IDLE = 6,
         };
 
 #endif //OS_PROJECT2022_THREADCODES_HPP

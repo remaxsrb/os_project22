@@ -25,17 +25,15 @@ public:
 
     bool isSysThread() const {return  sysThread;}
 
-    static void outputThreadBody(void*);
-
 
     uint64 getTimeSlice() const { return timeSlice; }
 
     using Body = void (*)(void*);
 
-    static thread_t createThread( Body body,  void *arg, uint64 *stack, bool runAtCreation);
 
     static thread_t createOutputThread();
     static thread_t createMainThread();
+    static thread_t createIdleThread();
 
     int start();
 
@@ -50,6 +48,8 @@ public:
     static thread_t output;
 
     static thread_t main;
+
+    static thread_t idle; //receno je u postavci zadatka da treba imati idle nit kako scheduler nikada ne bi bio prazan
 
 private:
     TCB(Body body, void *arg, uint64 *stack, bool runAtCreation) :
@@ -95,14 +95,17 @@ private:
      * 2 - READY
      * 3 - WAITING
      * 4 - SLEEPING
-     * 5 - IDLE
-     * 6 - FINISHED
+     * 5 - FINISHED
+     * 6 - IDLE
      * */
 
 
     friend class Riscv;
 
     friend class Semaphore;
+
+    static thread_t createThread( Body body,  void *arg, uint64 *stack, bool runAtCreation);
+
 
     static void threadWrapper();
 
@@ -113,6 +116,10 @@ private:
     static int exit(); //gasenje trenutne niti
 
     static uint64 timeSliceCounter;
+
+    static void outputThreadBody(void*);
+
+    static void idleThreadBody(void*);
 
 };
 

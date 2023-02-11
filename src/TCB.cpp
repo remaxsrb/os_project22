@@ -9,6 +9,8 @@
 thread_t TCB::running = nullptr;
 thread_t TCB::output = nullptr;
 thread_t TCB::main = nullptr;
+thread_t TCB::idle = nullptr;
+
 
 
 //imam probleme prilikom pozivanja thread_create u mejnu a da pri tom ne pokrecem samo C_THREAD_API_TEST
@@ -34,6 +36,13 @@ void TCB::outputThreadBody(void *) {
     }
 }
 
+void TCB::idleThreadBody(void *) {
+
+    while(true){
+        thread_dispatch();
+    }
+}
+
 thread_t TCB::createOutputThread()
 {
     if(!output)
@@ -41,8 +50,22 @@ thread_t TCB::createOutputThread()
         uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
         output = createThread(outputThreadBody, nullptr, stack, true);
         output->sysThread = true;
+
     }
     return output;
+}
+
+thread_t TCB::createIdleThread()
+{
+    if(!idle)
+    {
+        uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
+        idle = createThread(idleThreadBody, nullptr, stack, true);
+        idle->sysThread = true;
+        idle->thread_status = IDLE;
+
+    }
+    return idle;
 }
 
 thread_t TCB::createMainThread()
@@ -75,7 +98,8 @@ void TCB::dispatch()
     running = Scheduler::get();
     if (running)
         running->thread_status = RUNNING;
-
+    else
+        running=idle;
 
 
     TCB::contextSwitch(&old->context, &running->context);
@@ -83,7 +107,6 @@ void TCB::dispatch()
 
 void TCB::threadWrapper()
 {
-
     Riscv::popSppSpie();
     running->body(running->arg);
     running->setThreadStatus(FINISHED);

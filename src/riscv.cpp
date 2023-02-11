@@ -191,7 +191,7 @@ void Riscv::handleSupervisorTrap()
     }
     else if (scause == SOFTWARE)
     {
-         //interrupt: yes; cause code: supervisor software interrupt (CLINT; machine timer interrupt)
+        //interrupt: yes; cause code: supervisor software interrupt (CLINT; machine timer interrupt)
 
         TCB::timeSliceCounter++;
         SleepingThreads::tick();
@@ -212,6 +212,8 @@ void Riscv::handleSupervisorTrap()
     {
 
         //interrupt: yes; cause code: supervisor external interrupt (PLIC; could be keyboard)
+//        buffOUT->append('H');
+//        buffOUT->append('\n');
 
         int irq = plic_claim();
         if (irq == CONSOLE_IRQ) //prekid od tastature
