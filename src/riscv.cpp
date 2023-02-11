@@ -30,6 +30,7 @@ void Riscv::setPriviledge()
 
 void Riscv::popSppSpie()
 {
+    setPriviledge();
     __asm__ volatile("csrw sepc, ra");
     __asm__ volatile("sret");
 }
@@ -152,13 +153,13 @@ uint64 Riscv::syscall(uint64 *args)
         }
 
         case GET_C: {
-            return_value = buffIN->kernel_take();
+            return_value = buffIN->take();
             break;
         }
 
         case PUT_C: {
             char c = (char)args[1];
-            buffOUT->kernel_append(c);
+            buffOUT->append(c);
             break;
         }
 
@@ -225,8 +226,8 @@ void Riscv::handleSupervisorTrap()
             while (status & CONSOLE_RX_STATUS_BIT)
             {
                 char c = (*(char*)CONSOLE_RX_DATA);
-                buffIN->kernel_append(c);
-                buffOUT->kernel_append(c);
+                buffIN->append(c);
+                buffOUT->append(c);
                 status = *((char*)CONSOLE_STATUS);
             }
         }

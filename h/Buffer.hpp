@@ -16,11 +16,11 @@ class buffer {
 private:
     static const size_t BUFFER_SIZE = 256;
     char data[BUFFER_SIZE];
+
     uint64 readCursor;
     uint64 writeCursor;
     uint64 size;
-    //sem_t mutex_take;
-    //sem_t mutex_append;
+
     sem_t mutex;
     sem_t space_available;
     sem_t item_available;
@@ -30,9 +30,8 @@ public:
     buffer();
     ~buffer();
 
-    char kernel_take();
-    char user_take();
-    void kernel_append(char c);
+    char take();
+    void append(char c);
 
     uint64 getSize() const {return  this->size;}
 

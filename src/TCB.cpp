@@ -28,7 +28,7 @@ void TCB::outputThreadBody(void *) {
 
     while(true){
         while((*((char*)CONSOLE_STATUS) & CONSOLE_TX_STATUS_BIT)){
-            char c = Riscv::buffOUT->kernel_take();
+            char c = Riscv::buffOUT->take();
             *((char*)CONSOLE_TX_DATA) = c;
         }
     }
@@ -76,13 +76,11 @@ void TCB::dispatch()
     if (running)
         running->thread_status = RUNNING;
 
-    Riscv::setPriviledge();
     TCB::contextSwitch(&old->context, &running->context);
 }
 
 void TCB::threadWrapper()
 {
-    Riscv::setPriviledge();
     Riscv::popSppSpie();
     running->body(running->arg);
     running->setThreadStatus(FINISHED);
