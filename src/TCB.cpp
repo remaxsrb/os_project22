@@ -101,7 +101,9 @@ void TCB::dispatch()
     else
         running=idle;
 
+    //posto postoji idle nit ne moram da vodim racuna o prosledjivanju null pokazivaca u promenu konteksta
 
+    Riscv::setPriviledge();
     TCB::contextSwitch(&old->context, &running->context);
 }
 
@@ -133,6 +135,28 @@ int TCB::exit()
     return 0;
 }
 
+int TCB::sleep(time_t timeout)
+{
+    if(running->thread_status != RUNNING)
+       return -1;
+
+    running->thread_status=SLEEPING;
+    SleepingThreads::insert(running, timeout);
+    dispatch();
+
+    return 0;
+}
+
+int TCB::wake()
+{
+    if(running->thread_status != SLEEPING)
+        return -1;
+
+    running->thread_status = READY;
+    Scheduler::put(running);
+    return 0;
+
+}
 
 
 

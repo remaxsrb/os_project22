@@ -57,8 +57,7 @@ void SleepingThreads::tick() {
            sleepingThreadsList.peekFirst()->timeout <= passed)
     {
         thread_t t = pop();
-        t->setThreadStatus(READY);
-        Scheduler::put(t);
+        t->wake();
 
     }
 

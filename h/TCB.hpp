@@ -104,6 +104,8 @@ private:
 
     friend class Semaphore;
 
+    friend class SleepingThreads;
+
     static thread_t createThread( Body body,  void *arg, uint64 *stack, bool runAtCreation);
 
 
@@ -112,6 +114,10 @@ private:
     static void contextSwitch(Context *oldContext, Context *runningContext);
 
     static void dispatch();
+
+    static int sleep(time_t); //uspavljuje trenutnu nit na time_t otkucaja
+
+    int wake();
 
     static int exit(); //gasenje trenutne niti
 

@@ -133,19 +133,12 @@ uint64 Riscv::syscall(uint64 *args)
 
         case TIME_SLEEP: {
             time_t timeout = (time_t)args[1];
-            if(TCB::running->getThreadStatus() != RUNNING)
-            {
-                return_value = -1;
-                break;
-            }
-            TCB::running->setThreadStatus(SLEEPING);
-            SleepingThreads::insert(TCB::running, timeout);
-            TCB::dispatch();
-            return_value = 0;
+            return_value = TCB::sleep(timeout);
             break;
         }
 
         case GET_C: {
+
             return_value = buffIN->take();
             break;
         }
@@ -212,8 +205,7 @@ void Riscv::handleSupervisorTrap()
     {
 
         //interrupt: yes; cause code: supervisor external interrupt (PLIC; could be keyboard)
-//        buffOUT->append('H');
-//        buffOUT->append('\n');
+
 
         int irq = plic_claim();
         if (irq == CONSOLE_IRQ) //prekid od tastature
