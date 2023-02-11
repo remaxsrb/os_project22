@@ -76,11 +76,14 @@ void TCB::dispatch()
     if (running)
         running->thread_status = RUNNING;
 
+
+
     TCB::contextSwitch(&old->context, &running->context);
 }
 
 void TCB::threadWrapper()
 {
+
     Riscv::popSppSpie();
     running->body(running->arg);
     running->setThreadStatus(FINISHED);

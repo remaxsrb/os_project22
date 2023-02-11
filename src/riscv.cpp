@@ -20,17 +20,10 @@ void Riscv::initBuffers()
     buffOUT = new buffer();
 }
 
-void Riscv::setPriviledge()
-{
-    if (TCB::running->isSysThread())
-        ms_sstatus(Riscv::SSTATUS_SPP);
-    else
-        mc_sstatus(Riscv::SSTATUS_SPP);
-}
-
 void Riscv::popSppSpie()
 {
     setPriviledge();
+
     __asm__ volatile("csrw sepc, ra");
     __asm__ volatile("sret");
 }
@@ -189,9 +182,11 @@ void Riscv::handleSupervisorTrap()
 
         // interrupt: no; cause code: environment call from U-mode(8) or S-mode(9)
         uint64 volatile sepc = r_sepc() + 4;
+        uint64 volatile sstatus = r_sstatus();
 
         w_retval(syscall(args));
 
+        w_sstatus(sstatus);
         w_sepc(sepc);
     }
     else if (scause == SOFTWARE)

@@ -55,7 +55,7 @@ int _sem::close()
     closed = true;
     while(blocked.peekLast())
     {
-        thread_t temp = blocked.removeLast();
+        thread_t temp = blocked.removeFirst();
         temp->setThreadStatus(READY);
         Scheduler::put(temp);
     }

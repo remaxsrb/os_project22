@@ -22,7 +22,13 @@ public:
     // pop sstatus.spp and sstatus.spie bits (has to be a non inline function)
     static void popSppSpie();
 
-    static void setPriviledge();
+    static void setPriviledge()
+    {
+        if (TCB::running->isSysThread())
+            ms_sstatus(Riscv::SSTATUS_SPP);
+        else
+            mc_sstatus(Riscv::SSTATUS_SPP);
+    }
 
     // read register scause
     static uint64 r_scause();
