@@ -38,7 +38,7 @@ void _sem::block()
 {
     TCB::running->setThreadStatus(WAITING);
     blocked.addLast(TCB::running);
-    thread_dispatch();
+    TCB::dispatch();
 }
 
 void _sem::unblock()

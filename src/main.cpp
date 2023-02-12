@@ -18,7 +18,6 @@ void user_wrapper(void *sem)
 
 int main ()
 {
-    Riscv::w_stvec((uint64) &Riscv::supervisorTrap);
     MemoryAllocator::initialise_memory();
     Riscv::initBuffers();
 
@@ -26,6 +25,7 @@ int main ()
     thread_t idleThread = TCB::createIdleThread();
     thread_t outputThread = TCB::createOutputThread();
 
+    Riscv::w_stvec((uint64) &Riscv::supervisorTrap);
     Riscv::ms_sstatus(Riscv::SSTATUS_SIE);
 
     printString("main() started\n");

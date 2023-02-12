@@ -104,6 +104,8 @@ private:
 
     friend class Semaphore;
 
+    friend class _sem;
+
     friend class SleepingThreads;
 
     static thread_t createThread( Body body,  void *arg, uint64 *stack, bool runAtCreation);
@@ -117,7 +119,7 @@ private:
 
     static int sleep(time_t); //uspavljuje trenutnu nit na time_t otkucaja
 
-    int wake();
+    static int wake();
 
     static int exit(); //gasenje trenutne niti
 
@@ -126,6 +128,8 @@ private:
     static void outputThreadBody(void*);
 
     static void idleThreadBody(void*);
+
+
 
 };
 

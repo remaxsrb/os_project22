@@ -13,6 +13,8 @@ thread_t TCB::idle = nullptr;
 
 
 
+
+
 //imam probleme prilikom pozivanja thread_create u mejnu a da pri tom ne pokrecem samo C_THREAD_API_TEST
 // ili CPP_THREAD_API_TEST koristeci console.lib
 
