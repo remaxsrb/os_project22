@@ -6,16 +6,16 @@
 
 time_t SleepingThreads::passed = 0;
 
-time_t SleepingThreads::total_passed = 0;
 
 SleepingThreads SleepingThreads::sleepingThreadsList;
 
 void SleepingThreads::insert(thread_t thread, time_t timeout) {
 
-    SleepingThread *node = new SleepingThread(thread, timeout);
+    SleepingThread *node = new SleepingThread(thread, timeout+passed);
+    //dodaje se passed na broj otkucaja koji su prosli radi rasporedjivanja u redu uspavanih niti
     Elem *head = sleepingThreadsList.head;
 
-    if(!head || (node->timeout < head->data->timeout))
+    if(!head || (node->relative_time < head->data->relative_time))
         sleepingThreadsList.addFirst(node);
     else
     {
@@ -23,7 +23,7 @@ void SleepingThreads::insert(thread_t thread, time_t timeout) {
 
         for (Elem *curr = head->next; curr; curr = curr->next)
         {
-            if(node->timeout < curr->data->timeout)
+            if(node->relative_time < curr->data->relative_time)
             {
                 sleepingThreadsList.insertAfter(prev,node);
                 return;
@@ -47,14 +47,14 @@ thread_t SleepingThreads::pop() {
 
 void SleepingThreads::tick() {
 
-    total_passed++;
+
     if(sleepingThreadsList.size() > 0)
         passed++;
     else
         passed = 0;
 
     while (sleepingThreadsList.size() > 0 &&
-           sleepingThreadsList.peekFirst()->timeout <= passed)
+           sleepingThreadsList.peekFirst()->relative_time <= passed)
     {
         thread_t t = pop();
         t->wake();

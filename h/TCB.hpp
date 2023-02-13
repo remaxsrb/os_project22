@@ -119,7 +119,7 @@ private:
 
     static int sleep(time_t); //uspavljuje trenutnu nit na time_t otkucaja
 
-    static int wake();
+     int wake(); //ne sme da bude staticna metoda jer je poziva objekat TCB u sleeping threads klasi pri budjenju niti
 
     static int exit(); //gasenje trenutne niti
 

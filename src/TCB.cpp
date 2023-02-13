@@ -142,6 +142,7 @@ int TCB::sleep(time_t timeout)
     if(running->thread_status != RUNNING)
        return -1;
 
+
     running->thread_status=SLEEPING;
     SleepingThreads::insert(running, timeout);
     dispatch();
@@ -151,11 +152,11 @@ int TCB::sleep(time_t timeout)
 
 int TCB::wake()
 {
-    if(running->thread_status != SLEEPING)
+    if(thread_status != SLEEPING)
         return -1;
 
-    running->thread_status = READY;
-    Scheduler::put(running);
+    thread_status = READY;
+    Scheduler::put(this);
     return 0;
 
 }

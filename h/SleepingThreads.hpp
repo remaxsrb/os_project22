@@ -13,8 +13,8 @@
 
 struct SleepingThread{
     thread_t thread;
-    time_t timeout;
-    SleepingThread(thread_t _t, time_t _timeout) : thread(_t), timeout(_timeout) {}
+    time_t relative_time;
+    SleepingThread(thread_t _t, time_t _relative_time) : thread(_t), relative_time(_relative_time) {}
 
     void *operator new(size_t size) { return __mem_alloc(size); }
     void operator delete(void *ptr) { __mem_free(ptr); }
@@ -28,11 +28,10 @@ private:
 
     static time_t passed;
 
-    static time_t total_passed;
 
 public:
 
-    static void insert(thread_t thread, time_t timeout);
+    static void insert(thread_t thread, time_t _relative_time);
 
     static void tick();
 

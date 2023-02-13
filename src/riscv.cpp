@@ -191,6 +191,8 @@ void Riscv::handleSupervisorTrap()
         SleepingThreads::tick();
         if (TCB::timeSliceCounter >= TCB::running->getTimeSlice())
         {
+
+
             uint64 volatile sepc = r_sepc();
             uint64 volatile sstatus = r_sstatus();
 
