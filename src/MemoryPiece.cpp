@@ -91,11 +91,11 @@ void merge_blocks(MemoryPiece *free)
 
     //Ako postoji sledeci segment koji se slobodan i ako je velicina trenutnog takva da se proteze sve do sledeceg spajaj blokove
 
-    while (current->next && (((char*)current + current->size + MEM_BLOCK_SIZE) >= ((char*)(current->next))))
+    while (current->next && (((char*)current + current->size + sizeof(MemoryPiece)) >= ((char*)(current->next))))
     {
         next=current->next;
 
-        current->size += MEM_BLOCK_SIZE + next->size;
+        current->size += sizeof(MemoryPiece) + next->size;
         current->next = current->next->next;
 
         if(current->next)

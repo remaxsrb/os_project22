@@ -40,7 +40,7 @@ void *MemoryAllocator::alloc(size_t requested_size)
             remove(&free, current);
             insert(&allocated, current, ALLOCATED);
             allocd+=requested_size;
-            return (void*)((char*)current + MEM_BLOCK_SIZE);
+            return (void*)((char*)current + sizeof(MemoryPiece));
         }
 
             /*ako je slobodni segment veci od trazene kolicine memorije onda se ovaj segment
@@ -53,17 +53,17 @@ void *MemoryAllocator::alloc(size_t requested_size)
             remove(&free, current);
 
             //Ova nova adresa je ona koja se dobija kada bi originalni segment presekli na izracunatom mestu
-            MemoryPiece* new_node = (MemoryPiece*)((char*)current + MEM_BLOCK_SIZE + requested_size);
+            MemoryPiece* new_node = (MemoryPiece*)((char*)current + sizeof(MemoryPiece) + requested_size);
 
             new_node->prev=new_node->next= nullptr;
-            new_node->size = (current->size-MEM_BLOCK_SIZE-requested_size);
+            new_node->size = (current->size-sizeof(MemoryPiece)-requested_size);
 
             current->size = requested_size;
 
             insert(&free, new_node, FREE);
             insert(&allocated, current, ALLOCATED);
 
-            char* returnval = (char*)current+MEM_BLOCK_SIZE;
+            char* returnval = (char*)current+sizeof(MemoryPiece);
             allocd+=requested_size;
 
             return (void*)(returnval);
@@ -79,7 +79,7 @@ int MemoryAllocator::mem_free(void *mem_to_free)
     if(!mem_to_free)
         return -1;
 
-    MemoryPiece * mem_desc = (MemoryPiece*)((char*)mem_to_free-MEM_BLOCK_SIZE);
+    MemoryPiece * mem_desc = (MemoryPiece*)((char*)mem_to_free-sizeof(MemoryPiece));
 
     if(mem_desc->status != ALLOCATED)
         return -1;

@@ -6,7 +6,7 @@
 #define OS_PROJECT2022_MEMORYALLOCATOR_HPP
 
 //resenje kombinuje razne rokove
-//K2 2015, K2 2014 i septembar 2015
+//
 
 #include "../lib/hw.h"
 #include "MemoryPiece.hpp"
@@ -19,9 +19,9 @@ public:
 
     static uint64 deallocd;
 
-    static void *alloc(size_t);
+    static void *alloc(size_t); //k2 april 2014 zad2
 
-    static int mem_free(void*);
+    static int mem_free(void*); // k2 2015 septembar zad2
 
     static void initialise_memory();
 

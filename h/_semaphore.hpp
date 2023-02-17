@@ -9,7 +9,7 @@
 #include "list.hpp"
 #include "../lib/mem.h"
 
-//implementacija semafora je uzeta iz udzbenika
+//implementacija semafora je uzeta iz udzbenika, uz gotovo minimalna odstupanja
 
 class _sem {
 private:

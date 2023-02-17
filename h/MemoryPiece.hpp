@@ -24,7 +24,7 @@ void insert(MemoryPiece **head_ptr, MemoryPiece *node, enum MemoryPieceStatus st
 
 void remove(MemoryPiece **head_ptr, MemoryPiece *node);
 
-void merge_blocks(MemoryPiece *free);
+void merge_blocks(MemoryPiece *free); //K2 2015 zad2
 
 
 #endif //OS_PROJECT2022_MEMORYPIECE_HPP
