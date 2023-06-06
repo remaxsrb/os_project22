@@ -26,7 +26,7 @@ void MemoryAllocator::initialise_memory()
 
 void *MemoryAllocator::alloc(size_t requested_size)
 {
-    //ako broj bllokova nije deljiv sa velicinom bloka uradi peding
+    //ako broj blokova nije deljiv sa velicinom bloka uradi peding
     if(requested_size % MEM_BLOCK_SIZE != 0)
         requested_size = (requested_size / MEM_BLOCK_SIZE + 1 ) * MEM_BLOCK_SIZE;
 

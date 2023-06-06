@@ -161,6 +161,12 @@ int TCB::wake()
 
 }
 
+void TCB::join(thread_t *handle)
+{
+    while((*handle)->getThreadStatus() != FINISHED)
+        dispatch();
+}
+
 
 
 

@@ -4,15 +4,14 @@
 
 #include "../h/syscall_cpp.hpp"
 
-//posto periodic thread nije zadat sa nekim privatnim poljima mora se napraviti struct
-//koji ce drzati argumente tela funkcije i sam pokazivac na kreiranu periodicnu nit
+//imajuci u vidu da konstruktor nadklase Thread kao argument prima pokazivac na void
+// potrebna je pomocna struktura koja ce se slati kao argument jer nema smisla pretvarati time_t u void*
 
 struct periodic_struct
-        {
-            PeriodicThread *periodic_thread;
-            time_t period;
-        };
-
+{
+    PeriodicThread *periodic_thread;
+    time_t period;
+};
 
 
 void PeriodicThread::wrapper(void *arg)
@@ -25,6 +24,11 @@ void PeriodicThread::wrapper(void *arg)
     delete ps;
 }
 
+void PeriodicThread::terminate()
+{
+    thread_exit();
+}
+
 PeriodicThread::PeriodicThread(time_t period) :
-        Thread(PeriodicThread::wrapper, (void*)(new (periodic_struct){this, period}))
-{ }
+        Thread(PeriodicThread::wrapper, new (periodic_struct){this, this->period})
+{ this->period = period;}

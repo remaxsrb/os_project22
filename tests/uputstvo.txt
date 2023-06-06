@@ -1,5 +1,8 @@
-Potrebno je funkciju userMain pozvati unutar main funkcije kada se odradi potrebna inicijalizacija kernela.
-Funkcija userMain sadrži šest testova koji su zakomentarisani. 
-Moguće je pokrenuti jedan test tako što se otkomentariše odgovarajući poziv funkcije i odgovarajuća include direktiva.
+Potrebno je postaviti vrednosti makroa LEVEL_N_IMPLEMENTED na 1 za svaki urađeni zadatak, gde je N broj zadatka iz postavke.
+Funkciju userMain pozvati unutar main funkcije kada se odradi potrebna inicijalizacija kernela.
+Testovi iz funkcije userMain se uslovno izvršavaju.
+Izbor testova se vrši unosom odgovarajuće cifre.
 Datoteke iz ove .zip arhive sa izvornim kodom testova ubaciti u projekat i uskladiti include direktive prema mestu gde su ubačene datoteke.
-Otkomentarisati jedan poziv test funkcije i odgovarajuću include direktivu, prevesti kompletan projekat i pokrenuti.
+
+Napomena:
+Očekivano ponašanje za test 7 jeste da ne dolazi do regularnog završetka procesa.

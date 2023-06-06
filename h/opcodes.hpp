@@ -12,6 +12,7 @@ enum Opcodes: uint64 {
     THREAD_CREATE   = 0x11,
     THREAD_EXIT     = 0x12,
     THREAD_DISPATCH = 0x13,
+    THREAD_JOIN = 0x14,
     THREAD_START    = 0x15,
     THREAD_DELETE   = 0x16,
     THREAD_PREPARE   = 0x17,

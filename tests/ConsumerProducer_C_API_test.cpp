@@ -1,15 +1,9 @@
-//
-// Created by os on 4/17/22.
-//
-
-#ifndef XV6_CONSUMERPRODUCER_C_API_TEST_H
-#define XV6_CONSUMERPRODUCER_C_API_TEST_H
 
 #include "../h/syscall_c.h"
 
 #include "buffer.hpp"
 
-sem_t waitForAll;
+static sem_t waitForAll;
 
 struct thread_data {
     int id;
@@ -17,9 +11,9 @@ struct thread_data {
     sem_t wait;
 };
 
-volatile int threadEnd = 0;
+static volatile int threadEnd = 0;
 
-void producerKeyboard(void *arg) {
+static void producerKeyboard(void *arg) {
     struct thread_data *data = (struct thread_data *) arg;
 
     int key;
@@ -39,7 +33,7 @@ void producerKeyboard(void *arg) {
     sem_signal(data->wait);
 }
 
-void producer(void *arg) {
+static void producer(void *arg) {
     struct thread_data *data = (struct thread_data *) arg;
 
     int i = 0;
@@ -55,7 +49,7 @@ void producer(void *arg) {
     sem_signal(data->wait);
 }
 
-void consumer(void *arg) {
+static void consumer(void *arg) {
     struct thread_data *data = (struct thread_data *) arg;
 
     int i = 0;
@@ -141,5 +135,3 @@ void producerConsumer_C_API() {
     delete buffer;
 
 }
-
-#endif //XV6_CONSUMERPRODUCER_C_API_TEST_H

@@ -2,7 +2,7 @@
 // Created by remax on 10/13/22.
 //
 
-#include "../h/syscall_c.hpp"
+#include "../h/syscall_c.h"
 #include "../h/opcodes.hpp"
 #include "../tests/printing.hpp"
 
@@ -127,6 +127,15 @@ int thread_delete(thread_t handle)
     invoke_sys_call(THREAD_DELETE);
 
     return get_return_value();
+}
+
+void thread_join(thread_t handle)
+{
+    if (!handle)
+        return;
+
+    __asm__ volatile("mv a1, %0" : : "r" (handle));
+    invoke_sys_call(THREAD_JOIN);
 }
 
 int sem_open (sem_t* handle, unsigned init)

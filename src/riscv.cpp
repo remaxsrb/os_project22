@@ -84,6 +84,15 @@ uint64 Riscv::syscall(uint64 *args)
             break;
         }
 
+        case THREAD_JOIN: {
+
+            thread_t *handle = (thread_t*)args[1];
+
+            TCB::join(handle);
+
+            break;
+        }
+
         case THREAD_START: {
             thread_t handle = (thread_t)args[1];
             return_value = handle->start();

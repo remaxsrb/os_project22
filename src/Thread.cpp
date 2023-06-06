@@ -37,6 +37,12 @@ int Thread::sleep(time_t time)
     return time_sleep(time);
 }
 
+void Thread::join()
+{
+    if(myHandle)
+        thread_join(myHandle);
+}
+
 void Thread::wrapper(void *thread)
 {
     ((Thread*)thread)->run();

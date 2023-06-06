@@ -2,8 +2,8 @@
 // Created by remax on 10/13/22.
 //
 
-#ifndef OS_PROJECT2022_SYSCALL_C_HPP
-#define OS_PROJECT2022_SYSCALL_C_HPP
+#ifndef OS_PROJECT2022_SYSCALL_C_H
+#define OS_PROJECT2022_SYSCALL_C_H
 
 #include "../lib/hw.h"
 
@@ -29,7 +29,7 @@ int thread_start(thread_t handle);
 int thread_exit();
 void thread_dispatch();
 int thread_delete(thread_t handle);
-
+void thread_join(thread_t handle);
 
 class _sem;
 typedef _sem *sem_t;
@@ -52,4 +52,4 @@ char getc();
 void putc(char);
 
 
-#endif //OS_PROJECT2022_SYSCALL_C_HPP
+#endif //OS_PROJECT2022_SYSCALL_C_H

@@ -117,6 +117,8 @@ private:
 
     static void dispatch();
 
+    static void join (thread_t* handle);
+
     static int sleep(time_t); //uspavljuje trenutnu nit na time_t otkucaja
 
      int wake(); //ne sme da bude staticna metoda jer je poziva objekat TCB u sleeping threads klasi pri budjenju niti
