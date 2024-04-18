@@ -39,6 +39,9 @@ public:
     int wait();
     int signal();
 
+    int timedWait (time_t);
+    int tryWait();
+
 private:
     sem_t myHandle;
 };

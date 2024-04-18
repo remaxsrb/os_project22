@@ -140,6 +140,25 @@ uint64 Riscv::syscall(uint64 *args)
             break;
         }
 
+        case SEM_TIMED_WAIT: {
+            sem_t handle = (sem_t)args[1];
+            time_t  timeout = (time_t)args[2];
+
+            return_value = handle->timedWait(timeout);
+
+            break;
+
+        }
+
+        case SEM_TRY_WAIT: {
+            sem_t handle = (sem_t)args[1];
+
+            return_value = handle->tryWait();
+
+            break;
+
+        }
+
         case TIME_SLEEP: {
             time_t timeout = (time_t)args[1];
             return_value = TCB::sleep(timeout);
@@ -197,6 +216,8 @@ void Riscv::handleSupervisorTrap()
         mc_sip(SIP_SSIP);
 
         TCB::timeSliceCounter++;
+        _sem::internal_timer++;
+
         SleepingThreads::tick();
         if (TCB::timeSliceCounter >= TCB::running->getTimeSlice())
         {

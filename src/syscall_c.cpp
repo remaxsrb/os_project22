@@ -178,6 +178,29 @@ int sem_signal(sem_t id)
     return get_return_value();
 }
 
+int sem_timedWait (sem_t id, time_t timeout) {
+
+    if(!id)
+        return -1;
+
+    __asm__ volatile ("mv a2, %0" : : "r" (timeout));
+    __asm__ volatile ("mv a1, %0" : : "r" (id));
+    invoke_sys_call(SEM_TIMED_WAIT);
+
+    return get_return_value();
+}
+
+int sem_tryWait(sem_t id) {
+
+    if(!id)
+        return -1;
+
+    __asm__ volatile ("mv a1, %0" : : "r" (id));
+    invoke_sys_call(SEM_TRY_WAIT);
+
+    return get_return_value();
+}
+
 
 int time_sleep(time_t timeout)
 {

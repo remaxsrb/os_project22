@@ -8,15 +8,24 @@
 #include "TCB.hpp"
 #include "list.hpp"
 #include "../lib/mem.h"
+#include "semcodes.hpp"
 
 //implementacija semafora je uzeta iz udzbenika, uz gotovo minimalna odstupanja
 
 class _sem {
 private:
+
+
+
+    static uint64 internal_timer;
+
     int val;
     List<TCB> blocked;
     bool closed;
     _sem( int init);
+
+    friend class Riscv;
+
 protected:
     void block();
     void unblock();
@@ -30,6 +39,10 @@ public:
 
     int wait();
     int signal();
+
+    int timedWait (time_t);
+    int tryWait();
+
     int close();
     int value() const {return  this->val;}
     ~_sem(){close();}

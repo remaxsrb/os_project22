@@ -38,6 +38,8 @@ int sem_open(
         unsigned init
 );
 
+int sem_timedWait (sem_t id, time_t);
+int sem_tryWait(sem_t id);
 int sem_close(sem_t handle);
 int sem_wait(sem_t id);
 int sem_signal(sem_t id);

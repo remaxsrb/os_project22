@@ -4,7 +4,7 @@
 
 #include "../h/syscall_cpp.hpp"
 
-//C++ API implementacija
+//C++ API implementation
 Semaphore::Semaphore(unsigned init)
 {
     sem_open(&myHandle, init);
@@ -23,4 +23,12 @@ int Semaphore::wait()
 int Semaphore::signal()
 {
     return sem_signal(myHandle);
+}
+
+int Semaphore::timedWait(time_t timeout) {
+    return sem_timedWait(myHandle, timeout);
+}
+
+int Semaphore::tryWait() {
+    return sem_tryWait( myHandle);
 }
