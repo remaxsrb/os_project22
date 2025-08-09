@@ -49,6 +49,17 @@ int mem_free(void *ptr)
     return get_return_value();
 }
 
+size_t mem_get_free_space() {
+     invoke_sys_call(MEM_GET_FREE_SPACE);
+     return get_return_value();
+
+}
+
+size_t mem_get_largest_free_block() {
+    invoke_sys_call(MEM_GET_LARGEST_FREE_BLOCK);
+    return get_return_value();
+}
+
 
 int thread_create(thread_t *handle, void (*start_routine)(void*), void *arg)
 {

@@ -43,6 +43,14 @@ uint64 Riscv::syscall(uint64 *args)
             void *ptr = (void*)args[1];
             return_value = (uint64)__mem_free(ptr);
             break;}
+        case MEM_GET_FREE_SPACE: {
+            return_value = MemoryAllocator::mem_get_free_space();
+            break;
+        }
+        case MEM_GET_LARGEST_FREE_BLOCK: {
+            return_value = MemoryAllocator::mem_get_largest_free_block();
+            break;
+        }
         case THREAD_CREATE: {
             thread_t *handle = (thread_t*)args[1];
             Body routine = (Body)args[2];

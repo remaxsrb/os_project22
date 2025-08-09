@@ -31,7 +31,19 @@ int main ()
     printString("main() started\n");
 
     sem_t userSem;
+
+    printString("AVAILABLE MEMORY: ");
+    size_t available_memory = MemoryAllocator::mem_get_free_space();
+    printInt(available_memory);
+    printString("\n");
+
     sem_open(&userSem, 0);
+
+    printString("AVAILABLE MEMORY: ");
+    available_memory = MemoryAllocator::mem_get_free_space();
+
+    printInt(available_memory);
+    printString("\n");
 
     thread_t userThread ;
     thread_create(&userThread, user_wrapper, userSem);

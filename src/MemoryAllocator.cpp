@@ -94,3 +94,23 @@ int MemoryAllocator::mem_free(void *mem_to_free)
     return 1;
 
 }
+
+size_t MemoryAllocator::mem_get_free_space() {
+
+    size_t free_space = 0;
+
+    for (MemoryPiece* current = free; current; current=current->next) {
+        free_space+=current->size;
+    }
+    return free_space;
+}
+
+size_t MemoryAllocator::mem_get_largest_free_block() {
+    size_t largest_free_block = 0;
+    for (MemoryPiece* current = allocated; current; current=current->next) {
+        if (current->size > largest_free_block)
+            largest_free_block = current->size;
+    }
+    return largest_free_block;
+
+}

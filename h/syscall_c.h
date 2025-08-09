@@ -9,7 +9,8 @@
 
 void *mem_alloc(size_t size);
 int mem_free(void*);
-
+size_t mem_get_free_space();
+size_t mem_get_largest_free_block();
 
 class TCB;
 typedef TCB *thread_t;

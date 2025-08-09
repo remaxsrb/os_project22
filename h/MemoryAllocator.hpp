@@ -23,6 +23,10 @@ public:
 
     static int mem_free(void*); // k2 2015 septembar zad2
 
+    static size_t mem_get_free_space();
+
+    static size_t mem_get_largest_free_block();
+
     static void initialise_memory();
 
 };

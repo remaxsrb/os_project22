@@ -9,6 +9,8 @@
 enum Opcodes: uint64 {
     MEM_ALLOC       = 0x01,
     MEM_FREE        = 0x02,
+    MEM_GET_FREE_SPACE  = 0x03,
+    MEM_GET_LARGEST_FREE_BLOCK = 0x04,
     THREAD_CREATE   = 0x11,
     THREAD_EXIT     = 0x12,
     THREAD_DISPATCH = 0x13,
