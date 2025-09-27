@@ -17,6 +17,7 @@ class Riscv
 {
 public:
 
+    static void stopEmulator();
 
     static void initBuffers();
     // pop sstatus.spp and sstatus.spie bits (has to be a non inline function)

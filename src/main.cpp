@@ -65,5 +65,7 @@ int main ()
     delete Riscv::buffOUT;
     delete userSem;
 
+    Riscv::stopEmulator();
+
     return 0;
 }

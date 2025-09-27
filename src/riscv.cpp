@@ -12,6 +12,14 @@ using Body = void (*)(void*);
 buffer* Riscv::buffIN = nullptr;
 buffer* Riscv::buffOUT = nullptr;
 
+void Riscv::stopEmulator() {
+    __asm__ volatile("li t0, 0x100000");
+    __asm__ volatile("li t1, 0x5555");
+    __asm__ volatile("sw t1, 0(t0)");
+
+}
+
+
 //Ova metoda je neophodna jer ako se bafer direktno u mejnu inicijalizuje
 //dolazi do poremecaja u memoriji iz nekog razloga
 void Riscv::initBuffers()
