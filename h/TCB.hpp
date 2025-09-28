@@ -52,7 +52,7 @@ public:
     static thread_t idle; //receno je u postavci zadatka da treba imati idle nit kako scheduler nikada ne bi bio prazan
 
 private:
-    TCB(Body body, void *arg, uint64 *stack, bool runAtCreation) :
+    TCB(Body body, void *arg, uint64 *stack) :
             body(body),
             arg(arg),
             stack(body != nullptr ? stack : nullptr),
@@ -62,13 +62,7 @@ private:
             timeSlice(DEFAULT_TIME_SLICE),
             thread_status(body!= nullptr ? CREATED : RUNNING),
             sysThread(false)
-    {
-        if (body!= nullptr && runAtCreation)
-        {
-            Scheduler::put(this);
-            this->thread_status=READY;
-        }
-    }
+    {}
 
 private:
 
@@ -83,22 +77,11 @@ private:
     uint64 *stack;
     Context context;
     uint64 timeSlice;
-    uint8 thread_status;
+    volatile uint8 thread_status;
 
     bool sysThread; // fleg da svaka nit zna da li je sistemska ili nije
 
-    /*nit ce imati maksimalno sest/sedam stanja te ce 8 bita biti vise nego dovoljno da se ona cuvaju
-     * mozda bi bilo pametnije da se ovo uradi preko enuma na kraju
-     *
-     * 0 - CREATED
-     * 1 - RUNNING
-     * 2 - READY
-     * 3 - WAITING
-     * 4 - SLEEPING
-     * 5 - FINISHED
-     * 6 - IDLE
-     * */
-
+    int threadID;
 
     friend class Riscv;
 
@@ -108,8 +91,7 @@ private:
 
     friend class SleepingThreads;
 
-    static thread_t createThread( Body body,  void *arg, uint64 *stack, bool runAtCreation);
-
+    static thread_t createThread( Body body,  void *arg, uint64 *stack);
 
     static void threadWrapper();
 
@@ -131,7 +113,9 @@ private:
 
     static void idleThreadBody(void*);
 
+    static int globalThreadId;
 
+    static int getThreadID();
 
 };
 

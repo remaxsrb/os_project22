@@ -65,10 +65,11 @@ uint64 Riscv::syscall(uint64 *args)
             void *arguments = (void*)args[3];
             uint64  *stack = (uint64*)args[4];
 
-            *handle = TCB::createThread( routine, arguments, stack, true);
+            *handle = TCB::createThread( routine, arguments, stack);
 
-            if(*handle)
+            if(*handle) {
                 return_value =0;
+            }
             else
                 return_value=-1;
 
@@ -81,7 +82,7 @@ uint64 Riscv::syscall(uint64 *args)
             void *arguments = (void*)args[3];
             uint64  *stack = (uint64*)args[4];
 
-            *handle = TCB::createThread( routine, arguments, stack, false);
+            *handle = TCB::createThread( routine, arguments, stack);
 
             if(*handle)
                 return_value =0;
@@ -120,6 +121,12 @@ uint64 Riscv::syscall(uint64 *args)
             delete handle;
             break;
         }
+
+        case THREAD_ID: {
+            return_value = TCB::getThreadID();
+            break;
+        }
+
 
         case SEM_OPEN: {
 
@@ -237,7 +244,6 @@ void Riscv::handleSupervisorTrap()
         SleepingThreads::tick();
         if (TCB::timeSliceCounter >= TCB::running->getTimeSlice())
         {
-
 
             uint64 volatile sepc = r_sepc();
             uint64 volatile sstatus = r_sstatus();

@@ -7,6 +7,7 @@
 
 
 #include "list.hpp"
+#include "syscall_c.h"
 
 class TCB;
 
@@ -21,6 +22,8 @@ public:
     static void put(TCB *tcb);
 
     static bool isEmpty();
+
+    static int waitingCount();
 
 };
 

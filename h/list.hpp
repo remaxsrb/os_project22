@@ -32,8 +32,6 @@ protected:
         count++;
     }
 
-    uint64 size() {return count;}
-
     Elem *head, *tail;
 
 public:
@@ -42,6 +40,9 @@ public:
     List(const List<T> &) = delete;
 
     List<T> &operator=(const List<T> &) = delete;
+
+    uint64 size() {return count;}
+
 
     void addFirst(T *data)
     {
@@ -111,6 +112,8 @@ public:
         if (!tail) { return 0; }
         return tail->data;
     }
+
+
 };
 
 #endif //OS1_VEZBE07_RISCV_CONTEXT_SWITCH_2_INTERRUPT_LIST_HPP

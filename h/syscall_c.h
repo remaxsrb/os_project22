@@ -30,7 +30,8 @@ int thread_start(thread_t handle);
 int thread_exit();
 void thread_dispatch();
 int thread_delete(thread_t handle);
-void thread_join(thread_t handle);
+void thread_join(thread_t *handle);
+int get_thread_id();
 
 class _sem;
 typedef _sem *sem_t;

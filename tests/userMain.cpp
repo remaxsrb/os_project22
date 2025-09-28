@@ -1,3 +1,4 @@
+#include "histogram.h"
 #include "printing.hpp"
 
 #define LEVEL_1_IMPLEMENTED 1
@@ -31,7 +32,7 @@
 #endif
 
 void userMain() {
-    printString("Unesite broj testa? [1-7]\n");
+    printString("Unesite broj testa? [1-8]\n");
     int test = getc() - '0';
     getc(); // Enter posle broja
 
@@ -100,6 +101,12 @@ void userMain() {
             printString("TEST 7 (zadatak 2., testiranje da li se korisnicki kod izvrsava u korisnickom rezimu)\n");
 #endif
             break;
+        case 8:
+#if LEVEL_4_IMPLEMENTED == 1
+            histogram();
+            printString("Modifikacija histogram zavrsena\n");
+            break;
+#endif
         default:
             printString("Niste uneli odgovarajuci broj za test\n");
     }

@@ -40,7 +40,7 @@ int Thread::sleep(time_t time)
 void Thread::join()
 {
     if(myHandle)
-        thread_join(myHandle);
+        thread_join(&myHandle);
 }
 
 void Thread::wrapper(void *thread)

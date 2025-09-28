@@ -140,7 +140,7 @@ int thread_delete(thread_t handle)
     return get_return_value();
 }
 
-void thread_join(thread_t handle)
+void thread_join(thread_t *handle)
 {
     if (!handle)
         return;
@@ -148,6 +148,12 @@ void thread_join(thread_t handle)
     __asm__ volatile("mv a1, %0" : : "r" (handle));
     invoke_sys_call(THREAD_JOIN);
 }
+
+int get_thread_id() {
+    invoke_sys_call(THREAD_ID);
+    return get_return_value();
+}
+
 
 int sem_open (sem_t* handle, unsigned init)
 {

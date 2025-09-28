@@ -4,6 +4,7 @@
 
 #include "../h/TCB.hpp"
 #include "../h/riscv.hpp"
+#include "../tests/printing.hpp"
 
 
 thread_t TCB::running = nullptr;
@@ -12,7 +13,7 @@ thread_t TCB::main = nullptr;
 thread_t TCB::idle = nullptr;
 
 
-
+int TCB::globalThreadId = 1;
 
 
 //imam probleme prilikom pozivanja thread_create u mejnu a da pri tom ne pokrecem samo C_THREAD_API_TEST
@@ -23,11 +24,11 @@ thread_t TCB::idle = nullptr;
 
 uint64 TCB::timeSliceCounter = 0;
 
-thread_t TCB::createThread( Body body, void *arg, uint64 *stack, bool runAtCreation)
-{
-    return new TCB(body, arg, stack, runAtCreation);
+thread_t TCB::createThread( Body body, void *arg, uint64 *stack) {
+    thread_t t= new TCB(body, arg, stack);
+    t->threadID = globalThreadId++;
+    return  t;
 }
-
 void TCB::outputThreadBody(void *) {
 
     while(true){
@@ -50,9 +51,8 @@ thread_t TCB::createOutputThread()
     if(!output)
     {
         uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
-        output = createThread(outputThreadBody, nullptr, stack, true);
+        output = createThread(outputThreadBody, nullptr, stack);
         output->sysThread = true;
-
     }
     return output;
 }
@@ -62,10 +62,8 @@ thread_t TCB::createIdleThread()
     if(!idle)
     {
         uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
-        idle = createThread(idleThreadBody, nullptr, stack, true);
+        idle = createThread(idleThreadBody, nullptr, stack);
         idle->sysThread = true;
-        idle->thread_status = IDLE;
-
     }
     return idle;
 }
@@ -74,7 +72,7 @@ thread_t TCB::createMainThread()
 {
     if(!main)
     {
-        main = createThread(nullptr, nullptr, nullptr, false);
+        main = createThread(nullptr, nullptr, nullptr);
         main->sysThread = true;
         running = main;
     }
@@ -87,34 +85,31 @@ void TCB::yield()
     __asm__ volatile ("ecall");
 }
 
-void TCB::dispatch()
-{
+void TCB::dispatch() {
     timeSliceCounter = 0;
+
     TCB *old = running;
 
     if (old->thread_status == RUNNING) {
         old->thread_status = READY;
         Scheduler::put(old);
-
     }
     running = Scheduler::get();
-    if (running)
-        running->thread_status = RUNNING;
-    else
-        running=idle;
 
-    //posto postoji idle nit ne moram da vodim racuna o prosledjivanju null pokazivaca u promenu konteksta
+    if (!running) running = idle;
 
-    Riscv::setPriviledge();
-    TCB::contextSwitch(&old->context, &running->context);
+    running->thread_status = RUNNING;
+
+    Riscv::setPriviledge(); // <===== set execution privileges based on if thread is sys thread or not
+    contextSwitch(&old->context, &running->context);
 }
 
 void TCB::threadWrapper()
 {
     Riscv::popSppSpie();
     running->body(running->arg);
-    running->setThreadStatus(FINISHED);
-    TCB::yield();
+    exit();
+
 }
 
 int TCB::start()
@@ -129,19 +124,19 @@ int TCB::start()
 
 int TCB::exit()
 {
-    if (running->getThreadStatus() != RUNNING) {
-        return -1;
-    }
+    if (running->getThreadStatus() != RUNNING)   return -1;
+
     running->thread_status = FINISHED;
-    dispatch();
-    return 0;
+
+    yield();
+
+    return -1; // Should not reach here
 }
 
 int TCB::sleep(time_t timeout)
 {
     if(running->thread_status != RUNNING)
        return -1;
-
 
     running->thread_status=SLEEPING;
     SleepingThreads::insert(running, timeout);
@@ -165,8 +160,12 @@ void TCB::join(thread_t *handle)
 {
     while((*handle)->getThreadStatus() != FINISHED)
         dispatch();
+
 }
 
+int TCB::getThreadID() {
+    return running->threadID;
+}
 
 
 
