@@ -5,6 +5,7 @@
 #include "../h/TCB.hpp"
 #include "../h/riscv.hpp"
 #include "../tests/printing.hpp"
+#include "../h/_semaphore.hpp"
 
 
 thread_t TCB::running = nullptr;
@@ -27,6 +28,9 @@ uint64 TCB::timeSliceCounter = 0;
 thread_t TCB::createThread( Body body, void *arg, uint64 *stack) {
     thread_t t= new TCB(body, arg, stack);
     t->threadID = globalThreadId++;
+    _sem::createSemaphore(&t->spaceAvailable, 1);
+    _sem::createSemaphore(&t->itemAvailable, 0);
+
     return  t;
 }
 void TCB::outputThreadBody(void *) {
@@ -83,6 +87,14 @@ void TCB::yield()
 {
     __asm__ volatile ("mv a0, %0" : : "r" (THREAD_DISPATCH));
     __asm__ volatile ("ecall");
+}
+
+char * TCB::getMessage() {
+    return  this->message;
+}
+
+void TCB::setMessage(char *msg) {
+    this->message = msg;
 }
 
 void TCB::dispatch() {

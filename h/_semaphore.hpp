@@ -14,9 +14,6 @@
 
 class _sem {
 private:
-
-
-
     static uint64 internal_timer;
 
     int val;

@@ -18,10 +18,13 @@ public:
     int start();
 
     void join();
+    void send(char* message);
+    char* receive();
 
     static void dispatch();
     static int sleep(time_t);
     static void wrapper(void*);
+
 
 protected:
     Thread();

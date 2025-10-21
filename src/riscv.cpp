@@ -127,6 +127,29 @@ uint64 Riscv::syscall(uint64 *args)
             break;
         }
 
+        case THREAD_SEND: {
+
+            thread_t handle = (thread_t)args[1];
+            char* message = (char*)args[2];
+
+            handle->spaceAvailable->wait();
+            handle->setMessage(message);
+            handle->itemAvailable->signal();
+
+            break;
+        }
+
+        case THREAD_RECV: {
+            thread_t handle = (thread_t)args[1];
+
+            handle->itemAvailable->wait();
+            const char* message = handle->getMessage();
+            handle->spaceAvailable->signal();
+
+            return_value = (uint64)message;
+
+            break;
+        }
 
         case SEM_OPEN: {
 

@@ -7,10 +7,10 @@
 
 
 #include "../lib/hw.h"
-#include "Scheduler.hpp"
 #include "threadcodes.hpp"
 #include "../lib/mem.h"
 #include "syscall_cpp.hpp"
+#include  "../h/Scheduler.hpp"
 
 
 // Thread Control Block
@@ -51,6 +51,14 @@ public:
 
     static thread_t idle; //receno je u postavci zadatka da treba imati idle nit kako scheduler nikada ne bi bio prazan
 
+    sem_t spaceAvailable;
+
+    sem_t itemAvailable;
+
+    char* getMessage ();
+
+    void setMessage (char* msg);
+
 private:
     TCB(Body body, void *arg, uint64 *stack) :
             body(body),
@@ -61,8 +69,7 @@ private:
                     }),
             timeSlice(DEFAULT_TIME_SLICE),
             thread_status(body!= nullptr ? CREATED : RUNNING),
-            sysThread(false)
-    {}
+            sysThread(false) {}
 
 private:
 
@@ -83,9 +90,10 @@ private:
 
     int threadID;
 
-    friend class Riscv;
+    char* message;
 
-    friend class Semaphore;
+
+    friend class Riscv;
 
     friend class _sem;
 

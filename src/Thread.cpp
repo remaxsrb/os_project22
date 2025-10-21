@@ -43,6 +43,14 @@ void Thread::join()
         thread_join(&myHandle);
 }
 
+void Thread::send(char *message) {
+    thread_send(myHandle, message);
+}
+
+char * Thread::receive() {
+    return thread_recv(myHandle);
+}
+
 void Thread::wrapper(void *thread)
 {
     ((Thread*)thread)->run();

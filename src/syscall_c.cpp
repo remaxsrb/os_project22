@@ -140,6 +140,27 @@ int thread_delete(thread_t handle)
     return get_return_value();
 }
 
+void thread_send(thread_t handle, char *message) {
+    if (!handle || !message)
+        return;
+
+    __asm__ volatile("mv a2, %0" : : "r" (message));
+    __asm__ volatile("mv a1, %0" : : "r" (handle));
+    invoke_sys_call(THREAD_SEND);
+}
+
+
+char* thread_recv(thread_t handle)
+{
+    if (!handle)
+        return nullptr;
+
+    __asm__ volatile("mv a1, %0" : : "r" (handle));
+    invoke_sys_call(THREAD_RECV);
+
+    return (char*)get_return_value();
+}
+
 void thread_join(thread_t *handle)
 {
     if (!handle)

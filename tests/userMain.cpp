@@ -1,5 +1,6 @@
 #include "histogram.h"
 #include "printing.hpp"
+#include "thread_send_receive.h"
 
 #define LEVEL_1_IMPLEMENTED 1
 #define LEVEL_2_IMPLEMENTED 1
@@ -32,7 +33,7 @@
 #endif
 
 void userMain() {
-    printString("Unesite broj testa? [1-8]\n");
+    printString("Unesite broj testa? [1-9]\n");
     int test = getc() - '0';
     getc(); // Enter posle broja
 
@@ -107,6 +108,13 @@ void userMain() {
             printString("Modifikacija histogram zavrsena\n");
             break;
 #endif
+        case 9:
+#if LEVEL_4_IMPLEMENTED == 1
+            test_send_receive();
+            printString("Modifikacija thread_send_receive zavrsena\n");
+            break;
+#endif
+
         default:
             printString("Niste uneli odgovarajuci broj za test\n");
     }
