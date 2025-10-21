@@ -34,6 +34,8 @@ void PeriodicThread::wrapper(void *arg)
     }
     printString("Periodic thread terminated!\n");
     delete ps;
+    thread_exit();
+
 }
 
 void PeriodicThread::periodicActivation(void* arg) {
@@ -49,7 +51,6 @@ void PeriodicThread::periodicActivation(void* arg) {
 void PeriodicThread::terminate()
 {
     this->terminated = true;
-    thread_exit();
 }
 
 PeriodicThread::PeriodicThread(time_t period, char* message) :

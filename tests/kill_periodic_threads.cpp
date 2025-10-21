@@ -23,7 +23,6 @@ void kill_periodic_threads() {
 
         char c = getc();
         if (c == 'k') {
-            printString("GOT CHAR K!\n");
 
             PeriodicThread* temp = PeriodicThread::createdThreads.removeFirst();
             temp->terminate();
