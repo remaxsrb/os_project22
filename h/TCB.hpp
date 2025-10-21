@@ -90,8 +90,7 @@ private:
 
     int threadID;
 
-    char* message;
-
+    List<char*> messageQueue;
 
     friend class Riscv;
 

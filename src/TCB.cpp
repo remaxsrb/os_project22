@@ -28,7 +28,7 @@ uint64 TCB::timeSliceCounter = 0;
 thread_t TCB::createThread( Body body, void *arg, uint64 *stack) {
     thread_t t= new TCB(body, arg, stack);
     t->threadID = globalThreadId++;
-    _sem::createSemaphore(&t->spaceAvailable, 1);
+    _sem::createSemaphore(&t->spaceAvailable, 10);
     _sem::createSemaphore(&t->itemAvailable, 0);
 
     return  t;
@@ -90,11 +90,16 @@ void TCB::yield()
 }
 
 char * TCB::getMessage() {
-    return  this->message;
+
+    char **ptr = this->messageQueue.removeFirst();
+    char *msg = *ptr;
+    delete ptr;
+    return msg;
 }
 
 void TCB::setMessage(char *msg) {
-    this->message = msg;
+    char** ptr_msg = new char*(msg);
+    this->messageQueue.addLast(ptr_msg);
 }
 
 void TCB::dispatch() {

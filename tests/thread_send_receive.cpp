@@ -27,7 +27,7 @@ public:
 
             threadB->send((char*)"THREAD A -> THREAD B\n");
 
-            threadB->send((char*)"THREAD A -> THREAD C\n");
+            threadC->send((char*)"THREAD A -> THREAD C\n");
 
             char* msg = receive();
             printString(msg);
