@@ -1,6 +1,8 @@
 #include "histogram.h"
+#include "kill_periodic_threads.h"
 #include "printing.hpp"
 #include "thread_send_receive.h"
+#include "kill_periodic_threads.h"
 
 #define LEVEL_1_IMPLEMENTED 1
 #define LEVEL_2_IMPLEMENTED 1
@@ -34,6 +36,7 @@
 
 void userMain() {
     printString("Unesite broj testa? [1-9]\n");
+
     int test = getc() - '0';
     getc(); // Enter posle broja
 
@@ -110,10 +113,15 @@ void userMain() {
 #endif
         case 9:
 #if LEVEL_4_IMPLEMENTED == 1
-            test_send_receive();
-            printString("Modifikacija thread_send_receive zavrsena\n");
+            // test_send_receive();
+            // printString("Modifikacija thread_send_receive zavrsena\n");
+
+            kill_periodic_threads();
+            printString("Modifikacija kill_periodic_threads zavrsena\n");
+
             break;
 #endif
+
 
         default:
             printString("Niste uneli odgovarajuci broj za test\n");

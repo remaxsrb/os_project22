@@ -27,6 +27,10 @@ int Thread::start()
     return thread_start(myHandle);
 }
 
+int Thread::getId() {
+    return get_thread_id();
+}
+
 void Thread::dispatch()
 {
     thread_dispatch();

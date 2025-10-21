@@ -291,6 +291,7 @@ void Riscv::handleSupervisorTrap()
             while (status & CONSOLE_RX_STATUS_BIT)
             {
                 char c = (*(char*)CONSOLE_RX_DATA);
+
                 buffIN->append(c);
                 buffOUT->append(c);
                 status = *((char*)CONSOLE_STATUS);

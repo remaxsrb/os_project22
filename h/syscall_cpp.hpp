@@ -5,6 +5,7 @@
 #ifndef OS_PROJECT2022_SYSCALL_CPP_HPP
 #define OS_PROJECT2022_SYSCALL_CPP_HPP
 
+#include "list.hpp"
 #include "syscall_c.h"
 
 void *operator new(size_t) ;
@@ -16,7 +17,7 @@ public:
     virtual ~Thread();
 
     int start();
-
+    int getId();
     void join();
     void send(char* message);
     char* receive();
@@ -53,14 +54,15 @@ class PeriodicThread : public Thread {
 
 private:
     time_t period;
-
+    bool terminated;
 protected:
-    PeriodicThread(time_t period);
-    virtual void periodicActivation() {}
+    virtual void periodicActivation(void* arg);
 
 public:
+    PeriodicThread(time_t period, char *message);
     static void wrapper(void*);
     void terminate();
+    static List<PeriodicThread> createdThreads;
 
 };
 
