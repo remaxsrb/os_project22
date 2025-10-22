@@ -161,6 +161,24 @@ char* thread_recv(thread_t handle)
     return (char*)get_return_value();
 }
 
+void thread_pair(thread_t t1, thread_t t2) {
+    if (!t1 || ! t2) return;
+
+    __asm__ volatile("mv a2, %0" : : "r" (t2));
+    __asm__ volatile("mv a1, %0" : : "r" (t1));
+    invoke_sys_call(THREAD_PAIR);
+
+}
+
+void thread_sync(thread_t handle)
+{
+    if (!handle)
+        return;
+
+    __asm__ volatile("mv a1, %0" : : "r" (handle));
+    invoke_sys_call(THREAD_SYNC);
+}
+
 void thread_join(thread_t *handle)
 {
     if (!handle)

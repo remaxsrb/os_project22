@@ -1,8 +1,5 @@
-#include "histogram.h"
-#include "kill_periodic_threads.h"
 #include "printing.hpp"
-#include "thread_send_receive.h"
-#include "kill_periodic_threads.h"
+
 
 #define LEVEL_1_IMPLEMENTED 1
 #define LEVEL_2_IMPLEMENTED 1
@@ -30,7 +27,12 @@
 #include "ThreadSleep_C_API_test.hpp"
 // TEST 6 (zadatak 4. CPP API i asinhrona promena konteksta)
 #include "ConsumerProducer_CPP_API_test.hpp"
+#include "thread_send_receive.h"
+#include "kill_periodic_threads.h"
+#include "thread_paired_sync.h"
 #include "System_Mode_test.hpp"
+#include "histogram.h"
+#include "kill_periodic_threads.h"
 
 #endif
 
@@ -116,8 +118,11 @@ void userMain() {
             // test_send_receive();
             // printString("Modifikacija thread_send_receive zavrsena\n");
 
-            kill_periodic_threads();
-            printString("Modifikacija kill_periodic_threads zavrsena\n");
+            // kill_periodic_threads();
+            // printString("Modifikacija kill_periodic_threads zavrsena\n");
+
+            test_paired_sync();
+            printString("Modifikacija test_paired_sync zavrsena\n");
 
             break;
 #endif

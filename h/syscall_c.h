@@ -34,6 +34,8 @@ void thread_join(thread_t *handle);
 void thread_send(thread_t handle, char* message);
 char* thread_recv(thread_t handle);
 int get_thread_id();
+void thread_pair(thread_t t1, thread_t t2);
+void thread_sync(thread_t t);
 
 class _sem;
 typedef _sem *sem_t;

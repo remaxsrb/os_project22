@@ -26,6 +26,9 @@ public:
     static int sleep(time_t);
     static void wrapper(void*);
 
+    static void pair(Thread* t1, Thread* t2);
+    void sync();
+
 
 protected:
     Thread();

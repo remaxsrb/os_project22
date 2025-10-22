@@ -59,3 +59,13 @@ void Thread::wrapper(void *thread)
 {
     ((Thread*)thread)->run();
 }
+
+void Thread::pair(Thread *t1, Thread *t2)
+{
+    thread_pair(t1->myHandle, t2->myHandle);
+}
+
+void Thread::sync()
+{
+    thread_sync(this->myHandle);
+}

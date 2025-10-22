@@ -59,6 +59,8 @@ public:
 
     void setMessage (char* msg);
 
+    void sync();
+
 private:
     TCB(Body body, void *arg, uint64 *stack) :
             body(body),
@@ -69,7 +71,7 @@ private:
                     }),
             timeSlice(DEFAULT_TIME_SLICE),
             thread_status(body!= nullptr ? CREATED : RUNNING),
-            sysThread(false) {}
+            sysThread(false), waitingForPair(false){}
 
 private:
 
@@ -91,6 +93,10 @@ private:
     int threadID;
 
     List<char*> messageQueue;
+
+    thread_t pair;
+
+    bool waitingForPair;
 
     friend class Riscv;
 

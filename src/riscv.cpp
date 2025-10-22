@@ -127,6 +127,25 @@ uint64 Riscv::syscall(uint64 *args)
             break;
         }
 
+        case THREAD_PAIR: {
+
+            thread_t t1 = (thread_t)args[1];
+            thread_t t2 = (thread_t)args[2];
+
+            t1->pair = t2;
+            t2->pair = t1;
+
+            break;
+        }
+
+        case THREAD_SYNC: {
+            thread_t thread = (thread_t)args[1];
+
+            thread->sync();
+
+            break;
+        }
+
         case THREAD_SEND: {
 
             thread_t handle = (thread_t)args[1];

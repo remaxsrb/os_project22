@@ -7,7 +7,6 @@
 #include "../tests/printing.hpp"
 #include "../h/_semaphore.hpp"
 
-
 thread_t TCB::running = nullptr;
 thread_t TCB::output = nullptr;
 thread_t TCB::main = nullptr;
@@ -102,7 +101,30 @@ void TCB::setMessage(char *msg) {
     this->messageQueue.addLast(ptr_msg);
 }
 
-void TCB::dispatch() {
+void TCB::sync()
+{
+    if (!this->pair) return; // thread is not paired
+
+    if(!this->pair->waitingForPair) {
+        this->waitingForPair = true;
+        this->setThreadStatus(WAITING);
+        dispatch(); //yield after marking as waiting
+    }
+    else 
+    {
+        this->pair->waitingForPair = false;
+        this->pair->setThreadStatus(READY);
+        Scheduler::put(this->pair);
+
+        this->setThreadStatus(READY);
+        Scheduler::put(this);
+
+        dispatch(); //yield to let pair run
+    }
+}
+
+void TCB::dispatch()
+{
     timeSliceCounter = 0;
 
     TCB *old = running;

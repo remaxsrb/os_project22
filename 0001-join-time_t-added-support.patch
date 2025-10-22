@@ -1,0 +1,645 @@
+From 033b7335eb887dc9e6e021a71f9cc3649cdfa3a9 Mon Sep 17 00:00:00 2001
+From: Marko <marko.jovanovic@quectel.com>
+Date: Wed, 22 Oct 2025 14:13:07 +0200
+Subject: [PATCH] join(time_t) added support
+
+---
+ ...-functionality-seems-to-work-as-desi.patch | 337 ++++++++++++++++++
+ h/TCB.hpp                                     |   2 +
+ h/opcodes.hpp                                 |   1 +
+ h/syscall_c.h                                 |   3 +-
+ h/syscall_cpp.hpp                             |   1 +
+ src/TCB.cpp                                   |   3 +
+ src/Thread.cpp                                |   8 +-
+ src/riscv.cpp                                 |  12 +
+ src/syscall_c.cpp                             |  11 +-
+ tests/thread_paired_sync.cpp                  |   2 -
+ tests/time_join_test.cpp                      |  63 ++++
+ tests/time_join_test.h                        |   1 +
+ tests/userMain.cpp                            |   7 +-
+ 13 files changed, 442 insertions(+), 9 deletions(-)
+ create mode 100644 0001-Thread-Pair-Sync-functionality-seems-to-work-as-desi.patch
+ create mode 100644 tests/time_join_test.cpp
+ create mode 100644 tests/time_join_test.h
+
+diff --git a/0001-Thread-Pair-Sync-functionality-seems-to-work-as-desi.patch b/0001-Thread-Pair-Sync-functionality-seems-to-work-as-desi.patch
+new file mode 100644
+index 0000000..c13a9ce
+--- /dev/null
++++ b/0001-Thread-Pair-Sync-functionality-seems-to-work-as-desi.patch
+@@ -0,0 +1,337 @@
++From 1dd4d72ec35e5da7c585206827bf2dd231dd8fd0 Mon Sep 17 00:00:00 2001
++From: Marko <marko.jovanovic@quectel.com>
++Date: Wed, 22 Oct 2025 10:34:44 +0200
++Subject: [PATCH] Thread Pair - Sync functionality seems to work as desired
++
++---
++ h/TCB.hpp                    |  8 +++-
++ h/opcodes.hpp                |  2 +
++ h/syscall_c.h                |  3 ++
++ h/syscall_cpp.hpp            |  3 ++
++ src/TCB.cpp                  | 26 +++++++++++-
++ src/Thread.cpp               | 10 +++++
++ src/riscv.cpp                | 19 +++++++++
++ src/syscall_c.cpp            | 18 +++++++++
++ tests/thread_paired_sync.cpp | 76 ++++++++++++++++++++++++++++++++++++
++ tests/thread_paired_sync.h   |  3 ++
++ tests/userMain.cpp           |  8 +++-
++ 11 files changed, 171 insertions(+), 5 deletions(-)
++ create mode 100644 tests/thread_paired_sync.cpp
++ create mode 100644 tests/thread_paired_sync.h
++
++diff --git a/h/TCB.hpp b/h/TCB.hpp
++index 8b685ba..f7bcf6a 100644
++--- a/h/TCB.hpp
+++++ b/h/TCB.hpp
++@@ -59,6 +59,8 @@ public:
++ 
++     void setMessage (char* msg);
++ 
+++    void sync();
+++
++ private:
++     TCB(Body body, void *arg, uint64 *stack) :
++             body(body),
++@@ -69,7 +71,7 @@ private:
++                     }),
++             timeSlice(DEFAULT_TIME_SLICE),
++             thread_status(body!= nullptr ? CREATED : RUNNING),
++-            sysThread(false) {}
+++            sysThread(false), waitingForPair(false){}
++ 
++ private:
++ 
++@@ -92,6 +94,10 @@ private:
++ 
++     List<char*> messageQueue;
++ 
+++    thread_t pair;
+++
+++    bool waitingForPair;
+++
++     friend class Riscv;
++ 
++     friend class _sem;
++diff --git a/h/opcodes.hpp b/h/opcodes.hpp
++index da914d7..573563c 100644
++--- a/h/opcodes.hpp
+++++ b/h/opcodes.hpp
++@@ -11,6 +11,8 @@ enum Opcodes: uint64 {
++     MEM_FREE        = 0x02,
++     MEM_GET_FREE_SPACE  = 0x03,
++     MEM_GET_LARGEST_FREE_BLOCK = 0x04,
+++    THREAD_PAIR = 0x09,
+++    THREAD_SYNC = 0x10,
++     THREAD_CREATE   = 0x11,
++     THREAD_EXIT     = 0x12,
++     THREAD_DISPATCH = 0x13,
++diff --git a/h/syscall_c.h b/h/syscall_c.h
++index 0883bb1..016fdb8 100644
++--- a/h/syscall_c.h
+++++ b/h/syscall_c.h
++@@ -35,6 +35,9 @@ void thread_send(thread_t handle, char* message);
++ char* thread_recv(thread_t handle);
++ int get_thread_id();
++ 
+++void thread_pair(thread_t t1, thread_t t2);
+++void thread_sync(thread_t t);
+++
++ class _sem;
++ typedef _sem *sem_t;
++ int sem_open(
++diff --git a/h/syscall_cpp.hpp b/h/syscall_cpp.hpp
++index 96f79b5..c5c8f0c 100644
++--- a/h/syscall_cpp.hpp
+++++ b/h/syscall_cpp.hpp
++@@ -26,6 +26,9 @@ public:
++     static int sleep(time_t);
++     static void wrapper(void*);
++ 
+++    static void pair(Thread* t1, Thread* t2);
+++    void sync();
+++
++ 
++ protected:
++     Thread();
++diff --git a/src/TCB.cpp b/src/TCB.cpp
++index d01e18a..2fb6ba7 100644
++--- a/src/TCB.cpp
+++++ b/src/TCB.cpp
++@@ -7,7 +7,6 @@
++ #include "../tests/printing.hpp"
++ #include "../h/_semaphore.hpp"
++ 
++-
++ thread_t TCB::running = nullptr;
++ thread_t TCB::output = nullptr;
++ thread_t TCB::main = nullptr;
++@@ -102,7 +101,30 @@ void TCB::setMessage(char *msg) {
++     this->messageQueue.addLast(ptr_msg);
++ }
++ 
++-void TCB::dispatch() {
+++void TCB::sync()
+++{
+++    if (!this->pair) return; // thread is not paired
+++
+++    if(!this->pair->waitingForPair) {
+++        this->waitingForPair = true;
+++        this->setThreadStatus(WAITING);
+++        dispatch(); //yield after marking as waiting
+++    }
+++    else 
+++    {
+++        this->pair->waitingForPair = false;
+++        this->pair->setThreadStatus(READY);
+++        Scheduler::put(this->pair);
+++
+++        this->setThreadStatus(READY);
+++        Scheduler::put(this);
+++
+++        dispatch(); //yield to let pair run
+++    }
+++}
+++
+++void TCB::dispatch()
+++{
++     timeSliceCounter = 0;
++ 
++     TCB *old = running;
++diff --git a/src/Thread.cpp b/src/Thread.cpp
++index 5e43fda..1f40153 100644
++--- a/src/Thread.cpp
+++++ b/src/Thread.cpp
++@@ -59,3 +59,13 @@ void Thread::wrapper(void *thread)
++ {
++     ((Thread*)thread)->run();
++ }
+++
+++void Thread::pair(Thread *t1, Thread *t2)
+++{
+++    thread_pair(t1->myHandle, t2->myHandle);
+++}
+++
+++void Thread::sync()
+++{
+++    thread_sync(this->myHandle);
+++}
++diff --git a/src/riscv.cpp b/src/riscv.cpp
++index c78acce..148d7c6 100644
++--- a/src/riscv.cpp
+++++ b/src/riscv.cpp
++@@ -127,6 +127,25 @@ uint64 Riscv::syscall(uint64 *args)
++             break;
++         }
++ 
+++        case THREAD_PAIR: {
+++
+++            thread_t t1 = (thread_t)args[1];
+++            thread_t t2 = (thread_t)args[2];
+++
+++            t1->pair = t2;
+++            t2->pair = t1;
+++
+++            break;
+++        }
+++
+++        case THREAD_SYNC: {
+++            thread_t thread = (thread_t)args[1];
+++
+++            thread->sync();
+++
+++            break;
+++        }
+++
++         case THREAD_SEND: {
++ 
++             thread_t handle = (thread_t)args[1];
++diff --git a/src/syscall_c.cpp b/src/syscall_c.cpp
++index bae7d9c..2ad5a29 100644
++--- a/src/syscall_c.cpp
+++++ b/src/syscall_c.cpp
++@@ -161,6 +161,24 @@ char* thread_recv(thread_t handle)
++     return (char*)get_return_value();
++ }
++ 
+++void thread_pair(thread_t t1, thread_t t2) {
+++    if (!t1 || ! t2) return;
+++
+++    __asm__ volatile("mv a2, %0" : : "r" (t2));
+++    __asm__ volatile("mv a1, %0" : : "r" (t1));
+++    invoke_sys_call(THREAD_PAIR);
+++
+++}
+++
+++void thread_sync(thread_t handle)
+++{
+++    if (!handle)
+++        return;
+++
+++    __asm__ volatile("mv a1, %0" : : "r" (handle));
+++    invoke_sys_call(THREAD_SYNC);
+++}
+++
++ void thread_join(thread_t *handle)
++ {
++     if (!handle)
++diff --git a/tests/thread_paired_sync.cpp b/tests/thread_paired_sync.cpp
++new file mode 100644
++index 0000000..8345dbe
++--- /dev/null
+++++ b/tests/thread_paired_sync.cpp
++@@ -0,0 +1,76 @@
+++#include "thread_paired_sync.h"
+++#include "../h/syscall_cpp.hpp"
+++#include "printing.hpp"
+++
+++class WorkerA : public Thread {
+++
+++public:
+++    WorkerA() : Thread(wrapper, this){}
+++
+++    static void wrapper(void* arg) {
+++        WorkerA* t = (WorkerA *)arg;
+++        t->run();
+++
+++        printString("Thread A with ID: ");
+++        printInt(t->getId());
+++        printString(" finished!\n");
+++    }
+++
+++
+++    void run() {
+++        for (int i = 0; i < 3; i++) {
+++            printString("A before sync\n");
+++            this->sync();
+++            printString("A after sync\n");
+++        }
+++    }
+++
+++};
+++
+++
+++class WorkerB : public Thread {
+++
+++    
+++
+++public:
+++    WorkerB() : Thread(wrapper, this){}
+++
+++    static void wrapper(void* arg) {
+++        WorkerB* t = (WorkerB *)arg;
+++        t->run();
+++
+++        printString("Thread B with ID: ");
+++        printInt(t->getId());
+++        printString(" finished!\n");
+++    }
+++
+++    void run() {
+++        for (int i = 0; i < 3; i++) {
+++            printString("B before sync\n");
+++            this->sync();
+++            printString("B after sync\n");
+++        }
+++    }
+++
+++
+++};
+++
+++
+++void test_paired_sync() {
+++
+++    WorkerA* threadA = new WorkerA();
+++    WorkerB* threadB = new WorkerB;
+++
+++    Thread::pair(threadA, threadB);
+++
+++    threadA->start();
+++    threadB->start();
+++
+++    threadA->join();
+++    threadB->join();
+++
+++
+++    delete threadA;
+++    delete threadB;
+++
+++}
++\ No newline at end of file
++diff --git a/tests/thread_paired_sync.h b/tests/thread_paired_sync.h
++new file mode 100644
++index 0000000..e8e3b66
++--- /dev/null
+++++ b/tests/thread_paired_sync.h
++@@ -0,0 +1,3 @@
+++void test_paired_sync();
+++
+++
++diff --git a/tests/userMain.cpp b/tests/userMain.cpp
++index 590db61..120d93a 100644
++--- a/tests/userMain.cpp
+++++ b/tests/userMain.cpp
++@@ -3,6 +3,7 @@
++ #include "printing.hpp"
++ #include "thread_send_receive.h"
++ #include "kill_periodic_threads.h"
+++#include "thread_paired_sync.h"
++ 
++ #define LEVEL_1_IMPLEMENTED 1
++ #define LEVEL_2_IMPLEMENTED 1
++@@ -116,8 +117,11 @@ void userMain() {
++             // test_send_receive();
++             // printString("Modifikacija thread_send_receive zavrsena\n");
++ 
++-            kill_periodic_threads();
++-            printString("Modifikacija kill_periodic_threads zavrsena\n");
+++            // kill_periodic_threads();
+++            // printString("Modifikacija kill_periodic_threads zavrsena\n");
+++
+++            test_paired_sync();
+++            printString("Modifikacija test_paired_sync zavrsena\n");
++ 
++             break;
++ #endif
++-- 
++2.43.0
++
+diff --git a/h/TCB.hpp b/h/TCB.hpp
+index f7bcf6a..978c0a0 100644
+--- a/h/TCB.hpp
++++ b/h/TCB.hpp
+@@ -55,6 +55,8 @@ public:
+ 
+     sem_t itemAvailable;
+ 
++    sem_t joinTimerSem;
++
+     char* getMessage ();
+ 
+     void setMessage (char* msg);
+diff --git a/h/opcodes.hpp b/h/opcodes.hpp
+index 573563c..fcc21a1 100644
+--- a/h/opcodes.hpp
++++ b/h/opcodes.hpp
+@@ -11,6 +11,7 @@ enum Opcodes: uint64 {
+     MEM_FREE        = 0x02,
+     MEM_GET_FREE_SPACE  = 0x03,
+     MEM_GET_LARGEST_FREE_BLOCK = 0x04,
++    THREAD_JOIN_TIME = 0x08,
+     THREAD_PAIR = 0x09,
+     THREAD_SYNC = 0x10,
+     THREAD_CREATE   = 0x11,
+diff --git a/h/syscall_c.h b/h/syscall_c.h
+index 016fdb8..926d57c 100644
+--- a/h/syscall_c.h
++++ b/h/syscall_c.h
+@@ -25,16 +25,15 @@ int thread_prepare(
+         void *arg
+ );
+ 
+-
+ int thread_start(thread_t handle);
+ int thread_exit();
+ void thread_dispatch();
+ int thread_delete(thread_t handle);
+ void thread_join(thread_t *handle);
++void thread_join(thread_t *handle, time_t time);
+ void thread_send(thread_t handle, char* message);
+ char* thread_recv(thread_t handle);
+ int get_thread_id();
+-
+ void thread_pair(thread_t t1, thread_t t2);
+ void thread_sync(thread_t t);
+ 
+diff --git a/h/syscall_cpp.hpp b/h/syscall_cpp.hpp
+index c5c8f0c..0d4b0fd 100644
+--- a/h/syscall_cpp.hpp
++++ b/h/syscall_cpp.hpp
+@@ -19,6 +19,7 @@ public:
+     int start();
+     int getId();
+     void join();
++    void join(time_t time);
+     void send(char* message);
+     char* receive();
+ 
+diff --git a/src/TCB.cpp b/src/TCB.cpp
+index 2fb6ba7..fe6d466 100644
+--- a/src/TCB.cpp
++++ b/src/TCB.cpp
+@@ -29,6 +29,7 @@ thread_t TCB::createThread( Body body, void *arg, uint64 *stack) {
+     t->threadID = globalThreadId++;
+     _sem::createSemaphore(&t->spaceAvailable, 10);
+     _sem::createSemaphore(&t->itemAvailable, 0);
++    _sem::createSemaphore(&t->joinTimerSem, 0);
+ 
+     return  t;
+ }
+@@ -167,6 +168,8 @@ int TCB::exit()
+ 
+     running->thread_status = FINISHED;
+ 
++    running->joinTimerSem->signal();
++
+     yield();
+ 
+     return -1; // Should not reach here
+diff --git a/src/Thread.cpp b/src/Thread.cpp
+index 1f40153..ab8ee70 100644
+--- a/src/Thread.cpp
++++ b/src/Thread.cpp
+@@ -47,7 +47,13 @@ void Thread::join()
+         thread_join(&myHandle);
+ }
+ 
+-void Thread::send(char *message) {
++void Thread::join(time_t time)
++{
++    if(myHandle)
++        thread_join(&myHandle, time);
++}
++void Thread::send(char *message)
++{
+     thread_send(myHandle, message);
+ }
+ 
+diff --git a/src/riscv.cpp b/src/riscv.cpp
+index 148d7c6..7600846 100644
+--- a/src/riscv.cpp
++++ b/src/riscv.cpp
+@@ -110,6 +110,18 @@ uint64 Riscv::syscall(uint64 *args)
+             break;
+         }
+ 
++        case THREAD_JOIN_TIME: {
++            thread_t *handle = (thread_t*)args[1];
++            time_t time = (time_t)args[2];
++
++            if((*handle)->getThreadStatus() == FINISHED) break;
++
++            if(time == 0) TCB::join(handle);
++            else (*handle)->joinTimerSem->timedWait(time);
++
++            break;
++        }
++
+         case THREAD_START: {
+             thread_t handle = (thread_t)args[1];
+             return_value = handle->start();
+diff --git a/src/syscall_c.cpp b/src/syscall_c.cpp
+index 2ad5a29..ceba038 100644
+--- a/src/syscall_c.cpp
++++ b/src/syscall_c.cpp
+@@ -6,8 +6,6 @@
+ #include "../h/opcodes.hpp"
+ #include "../tests/printing.hpp"
+ 
+-
+-
+ inline void invoke_sys_call(uint64 opcode)
+ {
+     // ovo parce koda se ponavlja u svakom sistemskom pozivu pa sam ga izdvojio
+@@ -193,7 +191,16 @@ int get_thread_id() {
+     return get_return_value();
+ }
+ 
++void thread_join(thread_t *handle, time_t time)
++{
++    if (!handle)
++        return;
++
++    __asm__ volatile("mv a2, %0" : : "r" (time));
++    __asm__ volatile("mv a1, %0" : : "r" (handle));
+ 
++    invoke_sys_call(THREAD_JOIN_TIME);
++}
+ int sem_open (sem_t* handle, unsigned init)
+ {
+     if(!handle)
+diff --git a/tests/thread_paired_sync.cpp b/tests/thread_paired_sync.cpp
+index 8345dbe..d0ff6e2 100644
+--- a/tests/thread_paired_sync.cpp
++++ b/tests/thread_paired_sync.cpp
+@@ -30,7 +30,6 @@ public:
+ 
+ class WorkerB : public Thread {
+ 
+-    
+ 
+ public:
+     WorkerB() : Thread(wrapper, this){}
+@@ -69,7 +68,6 @@ void test_paired_sync() {
+     threadA->join();
+     threadB->join();
+ 
+-
+     delete threadA;
+     delete threadB;
+ 
+diff --git a/tests/time_join_test.cpp b/tests/time_join_test.cpp
+new file mode 100644
+index 0000000..6ee1b76
+--- /dev/null
++++ b/tests/time_join_test.cpp
+@@ -0,0 +1,63 @@
++#include "time_join_test.h"
++#include "../h/syscall_cpp.hpp"
++#include "printing.hpp"
++
++
++
++class Worker : public Thread {
++
++private:
++    int id;
++public:
++    Worker() : Thread(wrapper, this) {}
++
++    static void wrapper(void* arg) {
++        Worker* t = (Worker*)arg;
++        int id = t->getId();
++
++        t->id = id;
++
++        printString("Thread with ID: ");
++        printInt(id);
++        printString(" started!\n");
++
++        t->run();
++    
++        printString("Thread with ID: ");
++        printInt(id);
++        printString(" finished!\n");
++
++    }
++
++    void run() {
++        for (int i = 0; i < 100; i++) {
++            printString("Thread with ID: ");
++            printInt(id);
++            printString(" working!\n");
++        }
++    }
++};
++
++
++void time_join()
++{
++    printString("=== Time Join Test Start ===\n");
++
++
++    Thread* threads[3] = {nullptr};
++    for(int i = 0; i < 3; i++) {
++        threads[i] = new Worker();
++        threads[i]->start();
++    }
++
++    printString("Main: Thread 1 waiting for Thread 3 (timeout = 5)...\n");
++    threads[2]->join(5);
++    printString("Main: Thread 1 done waiting (timeout or finished)\n");
++
++    printString("Main: Thread 2 waiting for Thread 3 (no timeout)...\n");
++    threads[2]->join();
++    printString("Main: Thread 2 finished waiting (Thread 3 completed)\n");
++
++    printString("=== Time Join Test End ===\n");
++
++}
+diff --git a/tests/time_join_test.h b/tests/time_join_test.h
+new file mode 100644
+index 0000000..d2bc0e9
+--- /dev/null
++++ b/tests/time_join_test.h
+@@ -0,0 +1 @@
++void time_join();
+\ No newline at end of file
+diff --git a/tests/userMain.cpp b/tests/userMain.cpp
+index 120d93a..0f96967 100644
+--- a/tests/userMain.cpp
++++ b/tests/userMain.cpp
+@@ -4,6 +4,7 @@
+ #include "thread_send_receive.h"
+ #include "kill_periodic_threads.h"
+ #include "thread_paired_sync.h"
++#include "time_join_test.h"
+ 
+ #define LEVEL_1_IMPLEMENTED 1
+ #define LEVEL_2_IMPLEMENTED 1
+@@ -120,9 +121,11 @@ void userMain() {
+             // kill_periodic_threads();
+             // printString("Modifikacija kill_periodic_threads zavrsena\n");
+ 
+-            test_paired_sync();
+-            printString("Modifikacija test_paired_sync zavrsena\n");
++            //test_paired_sync();
++            //printString("Modifikacija test_paired_sync zavrsena\n");
+ 
++            time_join();
++            printString("Modifikacija time_join zavrsena\n");
+             break;
+ #endif
+ 
+-- 
+2.43.0
+
