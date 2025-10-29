@@ -11,6 +11,7 @@ enum Opcodes: uint64 {
     MEM_FREE        = 0x02,
     MEM_GET_FREE_SPACE  = 0x03,
     MEM_GET_LARGEST_FREE_BLOCK = 0x04,
+    THREAD_JOIN_TIME = 0x08,
     THREAD_PAIR = 0x09,
     THREAD_SYNC = 0x10,
     THREAD_CREATE   = 0x11,

@@ -33,6 +33,7 @@
 #include "System_Mode_test.hpp"
 #include "histogram.h"
 #include "kill_periodic_threads.h"
+#include "test_thread_timed_join.h"
 
 #endif
 
@@ -121,8 +122,11 @@ void userMain() {
             // kill_periodic_threads();
             // printString("Modifikacija kill_periodic_threads zavrsena\n");
 
-            test_paired_sync();
-            printString("Modifikacija test_paired_sync zavrsena\n");
+            // test_paired_sync();
+            // printString("Modifikacija test_paired_sync zavrsena\n");
+
+            test_thread_timed_join();
+            printString("Modifikacija test_thread_timed_join zavrsena\n");
 
             break;
 #endif

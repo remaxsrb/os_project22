@@ -19,6 +19,7 @@ public:
     int start();
     int getId();
     void join();
+    void join(time_t time);
     void send(char* message);
     char* receive();
 

@@ -31,6 +31,7 @@ int thread_exit();
 void thread_dispatch();
 int thread_delete(thread_t handle);
 void thread_join(thread_t *handle);
+void thread_join(thread_t *handle, time_t time);
 void thread_send(thread_t handle, char* message);
 char* thread_recv(thread_t handle);
 int get_thread_id();

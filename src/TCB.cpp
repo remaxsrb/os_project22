@@ -24,57 +24,52 @@ int TCB::globalThreadId = 1;
 
 uint64 TCB::timeSliceCounter = 0;
 
-thread_t TCB::createThread( Body body, void *arg, uint64 *stack) {
-    thread_t t= new TCB(body, arg, stack);
+thread_t TCB::createThread(Body body, void *arg, uint64 *stack) {
+    thread_t t = new TCB(body, arg, stack);
     t->threadID = globalThreadId++;
     _sem::createSemaphore(&t->spaceAvailable, 10);
     _sem::createSemaphore(&t->itemAvailable, 0);
+    _sem::createSemaphore(&t->joinTimerSem, 0);
 
-    return  t;
+
+    return t;
 }
-void TCB::outputThreadBody(void *) {
 
-    while(true){
-        while((*((char*)CONSOLE_STATUS) & CONSOLE_TX_STATUS_BIT)){
+void TCB::outputThreadBody(void *) {
+    while (true) {
+        while ((*((char *) CONSOLE_STATUS) & CONSOLE_TX_STATUS_BIT)) {
             char c = Riscv::buffOUT->take();
-            *((char*)CONSOLE_TX_DATA) = c;
+            *((char *) CONSOLE_TX_DATA) = c;
         }
     }
 }
 
 void TCB::idleThreadBody(void *) {
-
-    while(true){
+    while (true) {
         thread_dispatch();
     }
 }
 
-thread_t TCB::createOutputThread()
-{
-    if(!output)
-    {
-        uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
+thread_t TCB::createOutputThread() {
+    if (!output) {
+        uint64 *stack = (uint64 *) __mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
         output = createThread(outputThreadBody, nullptr, stack);
         output->sysThread = true;
     }
     return output;
 }
 
-thread_t TCB::createIdleThread()
-{
-    if(!idle)
-    {
-        uint64 *stack = (uint64*)__mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
+thread_t TCB::createIdleThread() {
+    if (!idle) {
+        uint64 *stack = (uint64 *) __mem_alloc(sizeof(uint64) * DEFAULT_STACK_SIZE);
         idle = createThread(idleThreadBody, nullptr, stack);
         idle->sysThread = true;
     }
     return idle;
 }
 
-thread_t TCB::createMainThread()
-{
-    if(!main)
-    {
+thread_t TCB::createMainThread() {
+    if (!main) {
         main = createThread(nullptr, nullptr, nullptr);
         main->sysThread = true;
         running = main;
@@ -82,14 +77,12 @@ thread_t TCB::createMainThread()
     return main;
 }
 
-void TCB::yield()
-{
+void TCB::yield() {
     __asm__ volatile ("mv a0, %0" : : "r" (THREAD_DISPATCH));
     __asm__ volatile ("ecall");
 }
 
-char * TCB::getMessage() {
-
+char *TCB::getMessage() {
     char **ptr = this->messageQueue.removeFirst();
     char *msg = *ptr;
     delete ptr;
@@ -97,21 +90,18 @@ char * TCB::getMessage() {
 }
 
 void TCB::setMessage(char *msg) {
-    char** ptr_msg = new char*(msg);
+    char **ptr_msg = new char *(msg);
     this->messageQueue.addLast(ptr_msg);
 }
 
-void TCB::sync()
-{
+void TCB::sync() {
     if (!this->pair) return; // thread is not paired
 
-    if(!this->pair->waitingForPair) {
+    if (!this->pair->waitingForPair) {
         this->waitingForPair = true;
         this->setThreadStatus(WAITING);
         dispatch(); //yield after marking as waiting
-    }
-    else 
-    {
+    } else {
         this->pair->waitingForPair = false;
         this->pair->setThreadStatus(READY);
         Scheduler::put(this->pair);
@@ -123,8 +113,7 @@ void TCB::sync()
     }
 }
 
-void TCB::dispatch()
-{
+void TCB::dispatch() {
     timeSliceCounter = 0;
 
     TCB *old = running;
@@ -143,16 +132,13 @@ void TCB::dispatch()
     contextSwitch(&old->context, &running->context);
 }
 
-void TCB::threadWrapper()
-{
+void TCB::threadWrapper() {
     Riscv::popSppSpie();
     running->body(running->arg);
     exit();
-
 }
 
-int TCB::start()
-{
+int TCB::start() {
     if (this->getThreadStatus() != CREATED) {
         return -1;
     }
@@ -161,50 +147,42 @@ int TCB::start()
     return 0;
 }
 
-int TCB::exit()
-{
-    if (running->getThreadStatus() != RUNNING)   return -1;
+int TCB::exit() {
+    if (running->getThreadStatus() != RUNNING) return -1;
 
     running->thread_status = FINISHED;
+    running->joinTimerSem->signal();
 
     yield();
 
     return -1; // Should not reach here
 }
 
-int TCB::sleep(time_t timeout)
-{
-    if(running->thread_status != RUNNING)
-       return -1;
+int TCB::sleep(time_t timeout) {
+    if (running->thread_status != RUNNING)
+        return -1;
 
-    running->thread_status=SLEEPING;
+    running->thread_status = SLEEPING;
     SleepingThreads::insert(running, timeout);
     dispatch();
 
     return 0;
 }
 
-int TCB::wake()
-{
-    if(thread_status != SLEEPING)
+int TCB::wake() {
+    if (thread_status != SLEEPING)
         return -1;
 
     thread_status = READY;
     Scheduler::put(this);
     return 0;
-
 }
 
-void TCB::join(thread_t *handle)
-{
-    while((*handle)->getThreadStatus() != FINISHED)
+void TCB::join(thread_t *handle) {
+    while ((*handle)->getThreadStatus() != FINISHED)
         dispatch();
-
 }
 
 int TCB::getThreadID() {
     return running->threadID;
 }
-
-
-

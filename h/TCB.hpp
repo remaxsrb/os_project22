@@ -55,6 +55,8 @@ public:
 
     sem_t itemAvailable;
 
+    sem_t joinTimerSem;
+
     char* getMessage ();
 
     void setMessage (char* msg);
